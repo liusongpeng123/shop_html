@@ -76,6 +76,10 @@
                 title: '品牌管理'
               },
               {
+                index: 'peoperty',
+                title: '属性管理'
+              },
+              {
                 index: '3-2',
                 title: '三级菜单',
                 subs: [
