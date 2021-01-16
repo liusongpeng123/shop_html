@@ -35,7 +35,7 @@
           prop="imgPath"
           label="图片">
           <template slot-scope="scope">
-            <img width="50px" :src="'http://'+scope.row.imgPath"/>
+            <img width="50px" :src="scope.row.imgPath"/>
           </template>
         </el-table-column>
 
@@ -110,7 +110,7 @@
         <el-form-item label="图片">
           <el-upload
             class="upload-demo"
-            action="http://192.168.1.43:8080/api/car/upload"
+            action="http://localhost:8080/api/brand/upload"
             :on-success="imgCallBack"
             name="file"
             list-type="picture">
@@ -156,7 +156,7 @@
 
           <el-upload
             class="upload-demo"
-            action="http://192.168.1.43:8080/api/car/upload"
+            action="http://localhost:8080/api/brand/upload"
             :on-success="imgCallBack"
             name="file"
             list-type="picture">
