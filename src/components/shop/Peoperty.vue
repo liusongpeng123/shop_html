@@ -165,18 +165,21 @@
           this.queryData(1);
         },
         handleDelete(id){
-          this.$axios.post("http://localhost:8080/api/peoperty/delete").then(rs=>{
+          this.$axios.post("http://localhost:8080/api/peoperty/delete?id="+id).then(rs=>{
             this. queryData(1);
           }).catch(err=>{console.log("删除失败")})
         },
         toUpdate(id){
-              this.$axios.post("http://localhost:8080/api/peoperty/updateById?id="+id).then(rs=>{
+
+              this.$axios.get("http://localhost:8080/api/peoperty/queryPeopertyById?id="+id).then(rs=>{
+                console.log(this.id);
+                this.addFormFlag=true;
                 this.addForm=rs.data.data;
                 this.queryData(1);
               }).catch(err=>{
                 console.log("查看修改页面失败")
               });
-          this.addFormFlag=true;
+
         },
         changetypeId(row, column){
         for (let i = 0; i <this.TypeData.length ; i++) {
@@ -186,9 +189,10 @@
         }
         return "未知"
       },addPeoperty(){
-          console.log(this.addForm);
-          if (this.addForm.id=null) {
-              this.$axios.post("http://localhost:8080/api/peoperty/updateById",this.$qs.stringify(this.addForm)).then(rs=>{
+          /*console.log(this.addForm);*/
+          debugger;
+          if (this.addForm.id!=null) {
+              this.$axios.post("http://localhost:8080/api/peoperty/updatePeoperty",this.$qs.stringify(this.addForm)).then(rs=>{
                 this.addFormFlag = false;
                 this.queryData(1);
               }).catch(error=>{
