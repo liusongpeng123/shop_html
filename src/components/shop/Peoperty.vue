@@ -24,7 +24,8 @@
 
           <el-table-column
             prop="isSku"
-            label="是否是sku属性">
+            label="是否是sku属性"
+            :formatter="isSku">
           </el-table-column>
 
           <el-table-column
@@ -89,7 +90,7 @@
 
 
           <el-form-item label="商品类型" prop="typeId">
-            <el-select v-model="addForm.typeId" placeholder="请选择">
+            <el-select v-model="addForm.typeId" placeholder="分类">
               <el-option
                 v-for="item in TypeDatas"
                 :key="item.id"
@@ -115,7 +116,7 @@
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button @click="addFormFlag = false">取 消</el-button>
-         <!-- <el-button type="primary" @click="addShopData">确 定</el-button>-->
+          <el-button type="primary" @click="addPeoperty">确 定</el-button>
         </div>
       </el-dialog>
 
@@ -184,10 +185,27 @@
           }
         }
         return "未知"
-      },
+      },addPeoperty(){
+          console.log(this.addForm);
+          if (this.addForm.id=null) {
+              this.$axios.post("http://localhost:8080/api/peoperty/updateById",this.$qs.stringify(this.addForm)).then(rs=>{
+                this.addFormFlag = false;
+                this.queryData(1);
+              }).catch(error=>{
+                  console.log("修改失败")
+              })
+          }else {
+            this.$axios.post("http://localhost:8080/api/peoperty/addPeoperty",this.$qs.stringify(this.addForm)).then(rs=>{
+              this.addFormFlag = false;
+              this.queryData(1)
+            }).catch(err=>console.log("新增失败"))
+          }
+        },
         changetype:function (row, column) {
         return row.peopertyType==0?"下拉框":row.peopertyType==1?"单选框":row.peopertyType==2?"复选框":"输入框"
-      },
+      }, isSku:function (row, column) {
+          return row.isSku==0?"是":"不是";
+        },
         toAddPeoperty(){
           this.addForm={};
           this.addFormFlag=true;
