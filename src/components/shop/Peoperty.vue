@@ -210,10 +210,11 @@
               isSku:"",
             },
             peopertyValueData:[],
+            id:"",
+            peoId:"",
             addPeopertyValueForm:{
                     id:"",
-                    peoId:"",
-                    name:"",
+                    name:"",peoId:"",
                     nameCh:""
             },addPeopertyValueFormFlag:false,
             peopertyValueFlag:false,
@@ -325,18 +326,20 @@
           return false;
         },
         peopertyValue(peoId){
-
+          this.peoId=peoId.id;
           this.peopertyValueFlag=true;
           this.$axios.get("http://localhost:8080/api/peopertyValue/queryByPeoId?peoId="+peoId).then(rs=>{
                 console.log(rs.data);
            this.peopertyValueData=rs.data;
           }).catch(err=>{console.log("查询失败")})
-        },deletePeopertyValue(id){
+        },
+        deletePeopertyValue(id){
           this.$axios.post("http://localhost:8080/api/peopertyValue/deletePeopertyValue?id="+id).then(rs=>{
             this. queryData(1);
            /* this.peopertyValue(this.id);*/
           }).catch(err=>console.log("删除失败"))
-        },toUpdatePeopertyValue(id){
+        },
+        toUpdatePeopertyValue(id){
           this.$axios.get("http://localhost:8080/api/peopertyValue/quertyPeopertyValueById?id="+id).then(rs=>{
             /*  console.log(this.id);*/
             this.addPeopertyValueFormFlag=true;
@@ -345,13 +348,13 @@
           }).catch(err=>{
             console.log("查看修改页面失败")
           })
-        }
-          ,toAddPeopertyValue(){
+        },
+        toAddPeopertyValue(){
       this.addPeopertyValueForm={};
       this.addPeopertyValueFormFlag=true;
 
-    },  addPeopertyValue(){
-          /*console.log(this.addForm);*/
+    },
+        addPeopertyValue(){
            debugger;
           if (this.addPeopertyValueForm.id!=null) {
 
@@ -364,7 +367,7 @@
           }
           else {
             debugger;
-            this.addPeopertyValueForm.peoId=this.id;
+            this.addPeopertyValueForm.peoId=this.peoId;
             this.$axios.post("http://localhost:8080/api/peopertyValue/addPeopertyValue",this.$qs.stringify(this.addPeopertyValueForm)).then(rs=>{
               this.addPeopertyValueFormFlag = false;
               this.queryData(1)
