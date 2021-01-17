@@ -21,7 +21,6 @@
             label="属性值">
           </el-table-column>
 
-
           <el-table-column
             prop="isSku"
             label="是否是sku属性"
@@ -107,6 +106,7 @@
       </el-dialog>
       <!--属性值信息模板-->
       <el-dialog title="属性值信息" :visible.sync="peopertyValueFlag">
+        <el-button type="success" plain @click="toAddPeopertyValue">新增</el-button>
         <el-table :data="peopertyValueData" style="width: 100%" border>
           <el-table-column
             prop="id"
@@ -126,8 +126,8 @@
 
           <el-table-column label="操作">
             <template slot-scope="scope">
-              <!--<el-button type="danger" plain
-                         @click="toUpdate(scope.row.id)">修改</el-button>-->
+              <el-button type="danger" plain
+                         @click="toUpdatePeopertyValue(scope.row.id)">修改</el-button>
               <el-button
                 type="warning" plain
                 @click="deletePeopertyValue( scope.row.id)">删除</el-button>
@@ -136,7 +136,53 @@
         </el-table>
 
       </el-dialog>
+      <!--新增属性值修改模板-->
+      <el-dialog title="属性值信息" :visible.sync="addPeopertyValueFormFlag">
 
+        <el-form :model="addPeopertyValueForm" ref="addPeopertyValueForm"   label-width="100px">
+         <!-- <el-form-item label="属性英文名" prop="id">
+            <el-input v-model="addPeopertyValueForm.id"  autocomplete="off" ></el-input>
+          </el-form-item>-->
+          <el-form-item label="属性英文名" prop="name">
+            <el-input v-model="addPeopertyValueForm.name" autocomplete="off" ></el-input>
+          </el-form-item>
+
+          <el-form-item label="属性中文名" prop="nameCh">
+            <el-input v-model="addPeopertyValueForm.nameCh" autocomplete="off" ></el-input>
+          </el-form-item>
+<!--
+
+
+          <el-form-item label="商品类型" prop="typeId">
+            <el-select v-model="addForm.typeId" placeholder="分类">
+              <el-option
+                v-for="item in TypeDatas"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              </el-option>
+            </el-select>
+          </el-form-item>
+
+          <el-form-item label="属性类型" prop="peopertyType">
+            <el-radio v-model="addForm.peopertyType" :label="0">下拉框</el-radio>
+            <el-radio v-model="addForm.peopertyType" :label="1">单选框</el-radio>
+            <el-radio v-model="addForm.peopertyType" :label="2">复选框</el-radio>
+            <el-radio v-model="addForm.peopertyType" :label="3">输入框</el-radio>
+          </el-form-item>
+
+          <el-form-item label="是否为Sku" prop="isSku">
+            <el-radio v-model="addForm.isSku" :label="0">是</el-radio>
+            <el-radio v-model="addForm.isSku" :label="1">否</el-radio>
+          </el-form-item>-->
+
+
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="addFormFlag = false">取 消</el-button>
+          <el-button type="primary" @click="addPeopertyValue">确 定</el-button>
+        </div>
+      </el-dialog>
 
 
 
@@ -163,13 +209,13 @@
               peopertyType:"",
               isSku:"",
             },
-            peopertyValueData:[]
-          /*    id:"",
-              name:"",
-              nameCh:"",
-              peoId:"",*/
-
-            ,
+            peopertyValueData:[],
+            addPeopertyValueForm:{
+                    id:"",
+                    peoId:"",
+                    name:"",
+                    nameCh:""
+            },addPeopertyValueFormFlag:false,
             peopertyValueFlag:false,
             page:0,
             sizes:[2,3,5,10],
@@ -219,8 +265,6 @@
         return "未知"
       },
         addPeoperty(){
-          /*console.log(this.addForm);*/
-         /* debugger;*/
           if (this.addForm.id!=null) {
               this.$axios.post("http://localhost:8080/api/peoperty/updatePeoperty",this.$qs.stringify(this.addForm)).then(rs=>{
                 this.addFormFlag = false;
@@ -288,11 +332,44 @@
            this.peopertyValueData=rs.data;
           }).catch(err=>{console.log("查询失败")})
         },deletePeopertyValue(id){
-          debugger;
           this.$axios.post("http://localhost:8080/api/peopertyValue/deletePeopertyValue?id="+id).then(rs=>{
             this. queryData(1);
            /* this.peopertyValue(this.id);*/
           }).catch(err=>console.log("删除失败"))
+        },toUpdatePeopertyValue(id){
+          this.$axios.get("http://localhost:8080/api/peopertyValue/quertyPeopertyValueById?id="+id).then(rs=>{
+            /*  console.log(this.id);*/
+            this.addPeopertyValueFormFlag=true;
+            this.addPeopertyValueForm=rs.data.data;
+            this.queryData(1);
+          }).catch(err=>{
+            console.log("查看修改页面失败")
+          })
+        }
+          ,toAddPeopertyValue(){
+      this.addPeopertyValueForm={};
+      this.addPeopertyValueFormFlag=true;
+
+    },  addPeopertyValue(){
+          /*console.log(this.addForm);*/
+           debugger;
+          if (this.addPeopertyValueForm.id!=null) {
+
+            this.$axios.post("http://localhost:8080/api/peopertyValue/updatePeopertyValue",this.$qs.stringify(this.addPeopertyValueForm)).then(rs=>{
+              this.addPeopertyValueFormFlag = false;
+              this.queryData(1);
+            }).catch(error=>{
+              console.log("修改失败")
+            })
+          }
+          else {
+            debugger;
+            this.addPeopertyValueForm.peoId=this.id;
+            this.$axios.post("http://localhost:8080/api/peopertyValue/addPeopertyValue",this.$qs.stringify(this.addPeopertyValueForm)).then(rs=>{
+              this.addPeopertyValueFormFlag = false;
+              this.queryData(1)
+            }).catch(err=>console.log("新增失败"))
+          }
         }
       },
       created(page){
