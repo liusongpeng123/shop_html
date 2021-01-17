@@ -39,28 +39,14 @@
             label="类型"
             :formatter="changetype">
           </el-table-column>
-          <!--<el-table-column
-            prop="imgPath"
-            label="图片">
-            <template slot-scope="scope">
-              <img width="50px" :src="'http://'+scope.row.imgPath"/>
-            </template>
-          </el-table-column>-->
-
-
-
-
-         <!-- <el-table-column
-            prop="bandDesc"
-            label="品牌介绍">
-          </el-table-column>-->
           <el-table-column label="操作">
             <template slot-scope="scope">
               <el-button type="danger" plain
-                         @click="toUpdate(scope.row.id)">修改</el-button>
-              <el-button
-                type="warning" plain
+                @click="toUpdate(scope.row.id)">修改</el-button>
+              <el-button type="warning" plain
                 @click="handleDelete( scope.row.id)">删除</el-button>
+              <el-button type="warning" plain
+                         @click="peopertyValue( scope.row.id)">属性值</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -119,6 +105,42 @@
           <el-button type="primary" @click="addPeoperty">确 定</el-button>
         </div>
       </el-dialog>
+      <!--属性值信息模板-->
+      <el-dialog title="属性值信息" :visible.sync="peopertyValueFlag">
+        <el-table :data="peopertyValueData" style="width: 100%" border>
+          <el-table-column
+            prop="id"
+            label="属性值英文名">
+          </el-table-column>
+
+          <el-table-column
+            prop="name"
+            label="属性值英文名">
+          </el-table-column>
+
+          <el-table-column
+            prop="nameCh"
+            label="属性值中文名"
+          >
+          </el-table-column>
+
+          <el-table-column label="操作">
+            <template slot-scope="scope">
+              <!--<el-button type="danger" plain
+                         @click="toUpdate(scope.row.id)">修改</el-button>-->
+              <el-button
+                type="warning" plain
+                @click="deletePeopertyValue( scope.row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+      </el-dialog>
+
+
+
+
+
 
       </div>
 
@@ -133,7 +155,6 @@
             addFormFlag:false,
             TypeDatas:[],
             TypeData:[],
-
             addForm:{
               id:"",
               peopertyId:"",
@@ -142,10 +163,19 @@
               peopertyType:"",
               isSku:"",
             },
-           page:0,
-             sizes:[2,3,5,10],
+            peopertyValueData:[]
+          /*    id:"",
+              name:"",
+              nameCh:"",
+              peoId:"",*/
+
+            ,
+            peopertyValueFlag:false,
+            page:0,
+            sizes:[2,3,5,10],
             limit:2,
-            length:0
+            length:0,
+            parentData:{},
           }
         },methods:{
         queryData(page){
@@ -167,19 +197,18 @@
         handleDelete(id){
           this.$axios.post("http://localhost:8080/api/peoperty/delete?id="+id).then(rs=>{
             this. queryData(1);
-          }).catch(err=>{console.log("删除失败")})
+          }).catch(err=>{
+            console.log("删除失败")})
         },
         toUpdate(id){
-
               this.$axios.get("http://localhost:8080/api/peoperty/queryPeopertyById?id="+id).then(rs=>{
-                console.log(this.id);
+              /*  console.log(this.id);*/
                 this.addFormFlag=true;
                 this.addForm=rs.data.data;
                 this.queryData(1);
               }).catch(err=>{
                 console.log("查看修改页面失败")
-              });
-
+              })
         },
         changetypeId(row, column){
         for (let i = 0; i <this.TypeData.length ; i++) {
@@ -188,9 +217,10 @@
           }
         }
         return "未知"
-      },addPeoperty(){
+      },
+        addPeoperty(){
           /*console.log(this.addForm);*/
-          debugger;
+         /* debugger;*/
           if (this.addForm.id!=null) {
               this.$axios.post("http://localhost:8080/api/peoperty/updatePeoperty",this.$qs.stringify(this.addForm)).then(rs=>{
                 this.addFormFlag = false;
@@ -198,7 +228,8 @@
               }).catch(error=>{
                   console.log("修改失败")
               })
-          }else {
+          }
+          else {
             this.$axios.post("http://localhost:8080/api/peoperty/addPeoperty",this.$qs.stringify(this.addForm)).then(rs=>{
               this.addFormFlag = false;
               this.queryData(1)
@@ -207,41 +238,67 @@
         },
         changetype:function (row, column) {
         return row.peopertyType==0?"下拉框":row.peopertyType==1?"单选框":row.peopertyType==2?"复选框":"输入框"
-      }, isSku:function (row, column) {
+      },
+        isSku:function (row, column) {
           return row.isSku==0?"是":"不是";
         },
         toAddPeoperty(){
           this.addForm={};
           this.addFormFlag=true;
+
         },
         getTypeData(){
           this.$axios.get("http://localhost:8080/api/type/getData").then(rs=>{
-            console.log(rs);
             this.TypeData=rs.data.data;
             this.getTypeDatas();
           }).catch(err=>{
             console.log("查询类型失败")})
-        },getTypeDatas(){
+        },
+        getTypeDatas(){
           for (let i = 0; i <this.TypeData.length ; i++) {
             var rs=this.isParent(this.TypeData[i]);
             if(rs==false){
+              this.getParent(this.TypeData[i].pid);
+              this.TypeData[i].name = "分类列表/"+this.parentData.name+"/"+this.TypeData[i].name;
                 this.TypeDatas.push(this.TypeData[i]);
-              console.log(this.TypeData[i]);
+            /*  console.log(this.TypeData[i]);*/
             }
           }
-        },isParent(datas){
+        },
+        getParent:function(pid){
+          for (var i = 0; i <this.TypeData.length ; i++) {
+            if (this.TypeData[i].id==pid){
+              /*debugger;*/
+              this.parentData=this.TypeData[i]
+            }
+          }},
+        isParent(datas){
           for (let i = 0; i <this.TypeData ; i++) {
             if(datas.id==this.TypeData[i].pid){
                 return true;
             }
           }
           return false;
-        }
+        },
+        peopertyValue(peoId){
 
+          this.peopertyValueFlag=true;
+          this.$axios.get("http://localhost:8080/api/peopertyValue/queryByPeoId?peoId="+peoId).then(rs=>{
+                console.log(rs.data);
+           this.peopertyValueData=rs.data;
+          }).catch(err=>{console.log("查询失败")})
+        },deletePeopertyValue(id){
+          debugger;
+          this.$axios.post("http://localhost:8080/api/peopertyValue/deletePeopertyValue?id="+id).then(rs=>{
+            this. queryData(1);
+           /* this.peopertyValue(this.id);*/
+          }).catch(err=>console.log("删除失败"))
+        }
       },
       created(page){
         this. queryData(1);
         this.getTypeData();
+
       }
     }
 </script>
