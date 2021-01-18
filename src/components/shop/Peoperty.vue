@@ -110,7 +110,7 @@
         <el-table :data="peopertyValueData" style="width: 100%" border>
           <el-table-column
             prop="id"
-            label="属性值英文名">
+            label="属性值id">
           </el-table-column>
 
           <el-table-column
@@ -210,11 +210,12 @@
               isSku:"",
             },
             peopertyValueData:[],
-            id:"",
-            peoId:"",
+
+           /* peoId:"",*/
             addPeopertyValueForm:{
                     id:"",
-                    name:"",peoId:"",
+                    name:"",
+                    peoId:"",
                     nameCh:""
             },addPeopertyValueFormFlag:false,
             peopertyValueFlag:false,
@@ -350,9 +351,10 @@
           })
         },
         toAddPeopertyValue(){
+          debugger;
       this.addPeopertyValueForm={};
       this.addPeopertyValueFormFlag=true;
-
+          this.addPeopertyValueForm.peoId=this.peopertyValueData[0].peoId;
     },
         addPeopertyValue(){
            debugger;
@@ -367,7 +369,7 @@
           }
           else {
             debugger;
-            this.addPeopertyValueForm.peoId=this.peoId;
+
             this.$axios.post("http://localhost:8080/api/peopertyValue/addPeopertyValue",this.$qs.stringify(this.addPeopertyValueForm)).then(rs=>{
               this.addPeopertyValueFormFlag = false;
               this.queryData(1)
