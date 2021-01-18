@@ -4,51 +4,51 @@
      <!-- 属性的表格信息展示-->
       <el-table :data="peopertyTableData" style="width: 100%" border>
 
-          <el-table-column
+          <el-table-column align="center"
             prop="id"
             label="序号">
           </el-table-column>
 
-          <el-table-column
+          <el-table-column align="center"
             prop="peopertyId"
             label="属性id">
           </el-table-column>
 
-          <el-table-column
+          <el-table-column align="center"
             prop="peopertyName"
             label="属性值">
           </el-table-column>
 
-          <el-table-column
+          <el-table-column align="center"
             prop="isSku"
             label="是否是sku属性"
             :formatter="isSku">
           </el-table-column>
 
-          <el-table-column
+          <el-table-column align="center"
             prop="peopertyType"
             label="属性的类型"
             :formatter="changetypeId">
           </el-table-column>
 
-          <el-table-column
+          <el-table-column align="center"
             prop="typeId"
             label="类型"
             :formatter="changetype">
           </el-table-column>
-          <el-table-column label="操作">
+          <el-table-column label="操作" align="center" width="230">
             <template slot-scope="scope">
               <el-button type="danger" plain
                 @click="toUpdate(scope.row.id)">修改</el-button>
               <el-button type="warning" plain
                 @click="handleDelete( scope.row.id)">删除</el-button>
-              <el-button v-if="scope.row.peopertyType!=3" type="warning" plain
-                         @click="peopertyValue( scope.row.id)">属性值</el-button>
+              <el-button v-if="scope.row.peopertyType!=3" type="success" plain
+                @click="peopertyValue( scope.row)">属性值</el-button>
             </template>
           </el-table-column>
         </el-table>
       <!--分页-->
-      <el-pagination
+      <el-pagination align="center"
 
           @current-change="handleCurrentChange"
           @size-change="handleSizeChange"
@@ -71,12 +71,9 @@
           </el-form-item>
 
           <el-form-item label="商品类型" prop="typeId">
-            <el-select v-model="addForm.typeId" placeholder="分类">
-              <el-option
-                v-for="item in TypeDatas"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id">
+            <el-select v-model="addForm.typeId" placeholder="请选择分类">
+             <!-- <el-option label="请选择" :value="-1"></el-option>-->
+              <el-option v-for="item in TypeData" :key="item.id" :label="item.name" :value="item.id">
               </el-option>
             </el-select>
           </el-form-item>
@@ -100,7 +97,7 @@
         </div>
       </el-dialog>
       <!--属性值表格信息展示模板-->
-      <el-dialog title="属性值信息" :visible.sync="peopertyValueFlag">
+      <el-dialog :title="valueTitle" :visible.sync="peopertyValueFlag">
         <el-button type="success" plain @click="toAddPeopertyValue">新增</el-button>
         <el-table :data="peopertyValueData" style="width: 100%" border>
           <el-table-column
@@ -132,7 +129,7 @@
       </el-dialog>
       <!--新增属性值修改模板-->
       <el-dialog title="属性值信息" :visible.sync="addPeopertyValueFormFlag">
-        <el-form :model="addPeopertyValueForm" ref="addPeopertyValueForm"   label-width="100px">
+        <el-form :model="addPeopertyValueForm" ref="addPeopertyValueForm" :rules="rules"  label-width="100px">
          <!-- <el-form-item label="属性英文名" prop="id">
             <el-input v-model="addPeopertyValueForm.id"  autocomplete="off" ></el-input>
           </el-form-item>-->
@@ -157,7 +154,30 @@
 <script>
     export default {
         name: "Peoperty",
+
         data(){
+          //属性值的中文验证
+          let checkChname = (rule, value, callback) => {
+            if (!value) {
+              return callback(new Error('属性名不能为空'));
+            }
+            if(/^[\u4e00-\u9fa5]+$/i.test(value)){
+              callback();
+            }else{
+              callback(new Error('只能输入中文'));
+            }
+          };
+          //属性值的英文验证
+          let checkName = (rule, value, callback) => {
+            if (!value) {
+              return callback(new Error('属性名不能为空'));
+            }
+            if(/^[\a-\z\A-\Z]+$/i.test(value)){
+              callback();
+            }else{
+              callback(new Error('只能输入英文字母'));
+            }
+          };
           return{
             //属性表格的字段
             peopertyTableData:[],
@@ -165,25 +185,23 @@
             addFormFlag:false,
             //类型
             TypeDatas:[],
-            TypeData:[],
+            TypeData:[
+          /* {"id":7,name:"分类/电子产品/手机"},
+             {"id":9,name:"分类/电子产品/笔记本"},
+             {"id":8,name:"分类/服装/上衣"},
+             {"id":10,name:"分类/服装/裤子"},
+             {"id":11,name:"分类/家电/空调"},
+             {"id":12,name:"分类/家电/洗衣机"},
+             {"id":13,name:"分类/家电/冰箱"}*/
+            ],typeName:"",
             //属性的新增表单需要的字段
             addForm:{
-              id:"",
-              peopertyId:"",
-              peopertyName:"",
-              typeId:"",
-              peopertyType:"",
-              isSku:"",
             },
             //属性值表格的字段
             peopertyValueData:[],
            /* peoId:"",*/
             //新增属性值的表单需要的字段
             addPeopertyValueForm:{
-                    id:"",
-                    name:"",
-                    peoId:"",
-                    nameCh:""
             },
             //新增属性值的状态默认设置为关闭
             addPeopertyValueFormFlag:false,
@@ -196,6 +214,21 @@
             length:0,
             //分类的父类
             parentData:{},
+            valueTitle:"",
+
+            rules:{
+              nameCh:[
+                { required: true, message: '请输入属性值中文名称', trigger: 'blur' },
+                {  max: 10, message: '长度不超过10 个字符', trigger: 'blur' },
+                { validator:checkChname,trigger: 'blur' }
+              ],
+              name:[
+                { required: true, message: '请输入属性值英文名称', trigger: 'blur' },
+                {  max: 10, message: '长度不超过10 个字符', trigger: 'blur' },
+                { validator:checkName,trigger: 'blur' }
+              ]
+
+            }
           }
         },methods:{
         //查询属性的分页
@@ -285,46 +318,62 @@
         //获得类型
         getTypeData(){
           this.$axios.get("http://localhost:8080/api/type/getData").then(rs=>{
-            this.TypeData=rs.data.data;
-            this.getTypeDatas();
+            this.TypeDatas=rs.data.data;
+            this.getChildrenType();
+            for (let i = 0; i <this.TypeData.length ; i++) {
+              this.typeName="";
+              this.diGui(this.TypeData[i]);
+              //给name重新赋值
+              this.TypeData[i].name=this.typeName.split("/").reverse().join("/");
+
+            }
           }).catch(err=>{
             console.log("查询类型失败")})
-        },
-        //加上分类
-        getTypeDatas(){
-          for (let i = 0; i <this.TypeData.length ; i++) {
-            var rs=this.isParent(this.TypeData[i]);
-            if(rs==false){
-              this.getParent(this.TypeData[i].pid);
-              this.TypeData[i].name = "分类列表/"+this.parentData.name+"/"+this.TypeData[i].name;
-                this.TypeDatas.push(this.TypeData[i]);
-            /*  console.log(this.TypeData[i]);*/
+        },diGui(node){
+          if(node.pid!=0){ //临界值
+            this.typeName+="/"+node.name;
+            //上级节点
+            for (let i = 0; i <this.TypeDatas.length ; i++) {
+              if(node.pid==this.TypeDatas[i].id){
+                this.diGui(this.TypeDatas[i]);
+                break;
+              }
             }
+
+          }else{
+            this.typeName+="/"+node.name;
           }
         },
-        getParent:function(pid){
-          for (var i = 0; i <this.TypeData.length ; i++) {
-            if (this.TypeData[i].id==pid){
-              /*debugger;*/
-              this.parentData=this.TypeData[i]
-            }
-          }},
-        //是否是父节点
-        isParent(datas){
-          for (let i = 0; i <this.TypeData ; i++) {
-            if(datas.id==this.TypeData[i].pid){
-                return true;
+        getChildrenType:function(){
+          //遍历所有的节点数据
+          for (let i = 0; i <this.TypeDatas.length ; i++) {
+            let  node=this.TypeDatas[i];
+            this.isChildrenNode(node);
+          }
+        },isChildrenNode:function(node){
+          let rs=true; //标示
+          for (let i = 0; i <this.TypeDatas.length ; i++) {
+            if(node.id==this.TypeDatas[i].pid){
+              rs=false;
+              break;
             }
           }
-          return false;
+          if(rs==true){
+            this.TypeData.push(node);
+          }
         },
         //属性值的弹框
-        peopertyValue(peoId){
-          this.peoId=peoId.id;
+        peopertyValue(row){
           this.peopertyValueFlag=true;
+          this.valueTitle=row.peopertyName+"的选项信息";
+          this.addPeopertyValueForm.peoId=row.id;
+          this.queryPeopertyValueTableData(row.id);
+
+        },
+        queryPeopertyValueTableData(peoId){
           this.$axios.get("http://localhost:8080/api/peopertyValue/queryByPeoId?peoId="+peoId).then(rs=>{
-                console.log(rs.data);
-           this.peopertyValueData=rs.data;
+            console.log(rs.data);
+            this.peopertyValueData=rs.data;
           }).catch(err=>{console.log("查询失败")})
         },
         //属性值的删除
@@ -352,23 +401,34 @@
         toAddPeopertyValue(){
        /*   debugger;*/
           //清空里面的值
-           this.addPeopertyValueForm={};
+           /*this.addPeopertyValueForm={};*/
           this.addPeopertyValueFormFlag=true;
-          //给peoId赋值
-          this.addPeopertyValueForm.peoId=this.peopertyValueData[0].peoId;
     },
         //属性值修改和新增的提交
         addPeopertyValue(){
            /*debugger;*/
+
+
+
+
           //如果有id 证明是修改
           if (this.addPeopertyValueForm.id!=null) {
-            this.$axios.post("http://localhost:8080/api/peopertyValue/updatePeopertyValue",this.$qs.stringify(this.addPeopertyValueForm)).then(rs=>{
-              //关闭弹框，重新查询
-              this.addPeopertyValueFormFlag = false;
-              this.queryData(1);
-            }).catch(error=>{
-              console.log("修改失败")
-            })
+
+            this.$refs["addPeopertyValueForm"].validate((valid) => {
+              if (valid) {
+                this.$axios.post("http://localhost:8080/api/peopertyValue/updatePeopertyValue",this.$qs.stringify(this.addPeopertyValueForm)).then(rs=>{
+                  //关闭弹框，重新查询
+                  this.addPeopertyValueFormFlag = false;
+                  this.queryData(1);
+                }).catch(error=>{
+                  console.log("修改失败")
+                })
+              } else {
+                console.log('error submit!!');
+                return false;
+              }
+            });
+
           }
           else {
             debugger;
