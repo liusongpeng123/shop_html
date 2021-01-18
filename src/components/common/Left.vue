@@ -80,6 +80,10 @@
                 title: '属性管理'
               },
               {
+                index: 'shopAdd',
+                title: '商品新增'
+              },
+              {
                 index: '3-2',
                 title: '三级菜单',
                 subs: [

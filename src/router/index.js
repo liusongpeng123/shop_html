@@ -38,6 +38,11 @@ export default new Router({
           path: '/peoperty',
           component: () => import(/* webpackChunkName: "dashboard" */ '../components/shop/Peoperty.vue'),
           meta: { title: '属性管理' }
+        },
+        {
+          path: '/shopAdd',
+          component: () => import(/* webpackChunkName: "dashboard" */ '../components/shop/ShopAdd.vue'),
+          meta: { title: '商品新增' }
         }
       ]
     }

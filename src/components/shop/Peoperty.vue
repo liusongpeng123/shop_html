@@ -215,7 +215,6 @@
             //分类的父类
             parentData:{},
             valueTitle:"",
-
             rules:{
               nameCh:[
                 { required: true, message: '请输入属性值中文名称', trigger: 'blur' },
@@ -318,13 +317,15 @@
         //获得类型
         getTypeData(){
           this.$axios.get("http://localhost:8080/api/type/getData").then(rs=>{
+            //定义的数据     TypeDatas 等于查询出来的所有数据
             this.TypeDatas=rs.data.data;
+            //查看有没有子节点数据
             this.getChildrenType();
             for (let i = 0; i <this.TypeData.length ; i++) {
               this.typeName="";
               this.diGui(this.TypeData[i]);
               //给name重新赋值
-              this.TypeData[i].name=this.typeName.split("/").reverse().join("/");
+              this.TypeData[i].name=this.typeName.split("/").reverse().join("/").substr(0,this.typeName.length-1);
 
             }
           }).catch(err=>{
@@ -347,18 +348,22 @@
         getChildrenType:function(){
           //遍历所有的节点数据
           for (let i = 0; i <this.TypeDatas.length ; i++) {
+            //节点中所有数据的一条
             let  node=this.TypeDatas[i];
+            //判断有没有子节点
             this.isChildrenNode(node);
           }
         },isChildrenNode:function(node){
           let rs=true; //标示
           for (let i = 0; i <this.TypeDatas.length ; i++) {
+            //如果数据的id有指向所有数据的pid 证明是下面还有节点的
             if(node.id==this.TypeDatas[i].pid){
               rs=false;
               break;
             }
           }
           if(rs==true){
+            //将数据放到表中需要的字段中
             this.TypeData.push(node);
           }
         },
@@ -443,6 +448,7 @@
       },
       created(page){
         this. queryData(1);
+        //属性的下拉框
         this.getTypeData();
 
       }
