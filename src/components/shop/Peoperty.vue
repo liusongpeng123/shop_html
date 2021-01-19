@@ -161,7 +161,7 @@
             if (!value) {
               return callback(new Error('属性名不能为空'));
             }
-            if(/^[\u4e00-\u9fa5]+$/i.test(value)){
+            if(/^[\u4e00-\u9fa5]+$/.test(value)){
               callback();
             }else{
               callback(new Error('只能输入中文'));
@@ -172,7 +172,7 @@
             if (!value) {
               return callback(new Error('属性名不能为空'));
             }
-            if(/^[\a-\z\A-\Z]+$/i.test(value)){
+            if(/^[\a-\z]+$/i.test(value)){
               callback();
             }else{
               callback(new Error('只能输入英文字母'));

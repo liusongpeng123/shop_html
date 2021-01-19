@@ -52,6 +52,51 @@
             </el-option>
           </el-select>
         </el-form-item>
+
+          <el-form-item v-model="peopertyAdd.peopertyId" v-if="skuData.length>0" label="商品参数" prop="peopertyId">
+            <el-form-item v-for="a in  skuData" :key="a.id" :label="a.peopertyName">
+
+              <!--  0 下拉框     1 单选框      2  复选框   3  输入框  -->
+              <el-select v-if="a.peopertyType==0" v-model="xia" placeholder="请选择">
+                <el-option v-for="item in a.values" :key="item.id"  :label="item.peopertyName" :value="item.nameCh"></el-option>
+              </el-select>
+
+              <el-radio-group  v-if="a.peopertyType==1" v-model="dan">
+                <el-radio v-for="item in a.values" :key="item.id" :label="item.nameCh"></el-radio>
+              </el-radio-group>
+
+              <el-checkbox-group  v-if="a.peopertyType==2" v-model="duo">
+                <el-checkbox v-for="item in a.values" :key="item.id" :label="item.nameCh" name="type"></el-checkbox>
+              </el-checkbox-group>
+
+              <el-input v-if="a.peopertyType==3"></el-input>
+            </el-form-item>
+          </el-form-item>
+
+
+          <el-form-item v-model="peoper" v-if="notSkuData.length>0" label="商品规格" prop="peopertyId">
+            <el-form-item v-for="a in  notSkuData" :key="a.id" :label="a.peopertyName">
+
+              <!--  0 下拉框     1 单选框      2  复选框   3  输入框  -->
+              <el-select v-if="a.peopertyType==0" v-model="xia" placeholder="请选择">
+                <el-option v-for="item in a.values" :key="item.id"  :label="item.peopertyName" :value="item.nameCh"></el-option>
+              </el-select>
+
+              <el-radio-group  v-if="a.peopertyType==1" v-model="dan">
+                <el-radio v-for="item in a.values" :key="item.id" :label="item.nameCh"></el-radio>
+              </el-radio-group>
+
+              <el-checkbox-group  v-if="a.peopertyType==2" v-model="duo">
+                <el-checkbox v-for="item in a.values" :key="item.id" :label="item.nameCh" name="type"></el-checkbox>
+              </el-checkbox-group>
+
+              <el-input v-if="a.peopertyType==3"></el-input>
+            </el-form-item>
+          </el-form-item>
+
+
+
+
         </el-form>
 
       <!--  <div style="margin-top:20px;" v-for="(item,index) in shopType" :key="index">
@@ -90,9 +135,14 @@
         BrandData:{},
         TypeData:[],
         TypeDatas:[],
-        peopertyAdd:[],
-
-        peopertyData:{}
+        peopertyAdd:{},
+        peoper:{},
+        peopertyData:[],
+        skuData:[],
+        notSkuData:[],
+        dan:"",
+        xia:"",
+        duo:[]
             //[{    name:"",typeNames:[{ type: "L", img: "" }]     }]
       };
     },methods: {
@@ -157,11 +207,48 @@
         }
       },
       selectChange(val){
-
+        this.notSkuData=[];
+        this.skuData=[];
         this.$axios.get("http://localhost:8080/api/peoperty/queryPeopertyByTypeId?typeId="+val).then(rs=>{
-          console.log(rs.data);
-          this.peopertyData=rs.data;
-        })
+         /* console.log(rs.data);*/
+          let peopertyData=rs.data;
+
+          //判断分类是否有数据   更新 参数和规格
+          if(peopertyData.length>0){
+            for (let i = 0; i <peopertyData.length ; i++) {
+                      if (peopertyData[i].isSku==0){
+                                if(peopertyData[i].peopertyType!=3){
+                                  //得到属性类型不为3（输入框）的所有属性值
+                                        this.$axios.get("http://localhost:8080/api/peopertyValue/queryByPeoId?peoId="+peopertyData[i].id).then(rs=>{
+                                          peopertyData[i].values=rs.data;
+                                          this.skuData.push(peopertyData[i]);
+                                        }).catch(err=>console.log("查询属性信息失败"))
+                                }
+                                else{
+                                  this.skuData.push(peopertyData[i]);
+                                }
+                      }
+                      else{
+                              if(peopertyData[i].peopertyType!=3){
+                                 //得到属性类型不为3（输入框）的所有属性值
+                                      this.$axios.get("http://localhost:8080/api/peopertyValue/queryByPeoId?peoId="+peopertyData[i].id).then(rs=>{
+                                       peopertyData[i].values=rs.data;
+                                        this.notSkuData.push(peopertyData[i]);
+                                      }).catch(err=>console.log("查询属性信息失败"))
+                               }
+                              else{
+                                  this.notSkuData.push(peopertyData[i]);
+                                  console.log(this.notSkuData)
+                              }
+                      }
+            }
+          }else{
+            this.notSkuData=[];
+            this.skuData=[];
+          }
+        });
+        /*console.log(this.skuData);
+        console.log(this.notSkuData);*/
       }
 
     },created(){
