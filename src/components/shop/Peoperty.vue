@@ -186,13 +186,7 @@
             //类型
             TypeDatas:[],
             TypeData:[
-          /* {"id":7,name:"分类/电子产品/手机"},
-             {"id":9,name:"分类/电子产品/笔记本"},
-             {"id":8,name:"分类/服装/上衣"},
-             {"id":10,name:"分类/服装/裤子"},
-             {"id":11,name:"分类/家电/空调"},
-             {"id":12,name:"分类/家电/洗衣机"},
-             {"id":13,name:"分类/家电/冰箱"}*/
+          /* {"id":7,name:"分类/电子产品/手机"},*/
             ],typeName:"",
             //属性的新增表单需要的字段
             addForm:{
@@ -201,8 +195,7 @@
             peopertyValueData:[],
            /* peoId:"",*/
             //新增属性值的表单需要的字段
-            addPeopertyValueForm:{
-            },
+            addPeopertyValueForm:{},
             //新增属性值的状态默认设置为关闭
             addPeopertyValueFormFlag:false,
             //属性值的弹框状态设置为关闭
@@ -397,7 +390,7 @@
             //赋值
             this.addPeopertyValueForm=rs.data.data;
             //重新查询
-            this.queryData(1);
+         /*   this.queryData();*/
           }).catch(err=>{
             console.log("查看修改页面失败")
           })

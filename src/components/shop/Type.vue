@@ -80,7 +80,7 @@
                 break;
               }
           }
-          console.log(this.jsonStr);
+         /* console.log(this.jsonStr);*/
           this.dat.push(JSON.parse(this.jsonStr))
         },
         digui(node){
@@ -113,10 +113,11 @@
           return false;
         },
         append(dat) {
-          console.log(dat);
+          /*console.log(dat);*/
+          this.form=[];
           this.dialogFormVisible=true;
           this.form.pid=dat.id;
-          console.log(JSON.stringify(this.form))
+         /* console.log(JSON.stringify(this.form))*/
         },
         add(){
           debugger;
@@ -144,9 +145,9 @@
           this.form=data;
         },
         updateForm(){
-          console.log(this.form);
-              this.$axios.post("http://localhost:8080/api/type/update",this.$qs.stringify(this.form)).then(function () {
+              this.$axios.post("http://localhost:8080/api/type/update",this.$qs.stringify(this.form)).then(rs=> {
                 this.updateFromShowFlag=false;
+             /*   console.log(rs.data);*/
                 this.getData();
               }).catch(function () {
                 console.log("修改失败");
