@@ -21,7 +21,7 @@
 
           <el-form-item label="品牌" prop="brandId">
             <el-select v-model="shopAdd.brandId" placeholder="请选择分类">
-               <el-option label="请选择" :value="-1"></el-option>
+              <el-option label="请选择" :value="-1"></el-option>
               <el-option v-for="item in BrandData" :key="item.id" :label="item.name" :value="item.id">
               </el-option>
             </el-select>
@@ -46,14 +46,14 @@
       </div>
       <div class="info" v-if="active==2">
         <el-form ref="peopertyAdd" :model="peopertyAdd" label-width="80px" >
-        <el-form-item label="商品类型" prop="typeId">
-          <el-select v-model="peopertyAdd.typeId" placeholder="请选择分类" @change="selectChange">
-            <el-option v-for="item in TypeData" :key="item.id" :label="item.name" :value="item.id">
-            </el-option>
-          </el-select>
-        </el-form-item>
+          <el-form-item label="商品类型" prop="typeId">
+            <el-select v-model="peopertyAdd.typeId" placeholder="请选择分类" @change="selectChange">
+              <el-option v-for="item in TypeData" :key="item.id" :label="item.name" :value="item.id">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item v-model="peopertyAdd.peopertyId" v-if="skuData.length>0" label="商品sku" prop="peopertyId">
 
-          <el-form-item v-model="peopertyAdd.peopertyId" v-if="skuData.length>0" label="商品参数" prop="peopertyId">
             <el-form-item v-for="a in  skuData" :key="a.id" :label="a.peopertyName">
 
               <!--  0 下拉框     1 单选框      2  复选框   3  输入框  -->
@@ -65,16 +65,47 @@
                 <el-radio v-for="item in a.values" :key="item.id" :label="item.nameCh"></el-radio>
               </el-radio-group>
 
-              <el-checkbox-group  v-if="a.peopertyType==2" v-model="duo">
-                <el-checkbox v-for="item in a.values" :key="item.id" :label="item.nameCh" name="type"></el-checkbox>
+              <el-checkbox-group  v-if="a.peopertyType==2" v-model="a.ckValues" @change="skuChange">
+                <el-checkbox v-for="item in a.values" :key="item.id" :label="item.nameCh" ></el-checkbox>
               </el-checkbox-group>
 
               <el-input v-if="a.peopertyType==3"></el-input>
             </el-form-item>
+
+
           </el-form-item>
 
+          <el-table
+            v-if="tableShow"
+            :data="tableSkuData"
+            style="width: 100%" :span-method="objectSpanMethod1">
+            <!--   动态展示列头  sku属性中文名 -->
+            <el-table-column v-for="c in cols" :key="c.id" :label="c.nameCH" :prop="c.name">
+            </el-table-column>
 
-          <el-form-item v-model="peoper" v-if="notSkuData.length>0" label="商品规格" prop="peopertyId">
+            <el-table-column
+              label="库存"
+              width="180">
+
+              <template slot-scope="scope">
+                <el-input/>
+              </template>
+
+            </el-table-column>
+            <el-table-column
+              label="价格"
+              width="180">
+              <template slot-scope="scope">
+                <el-input/>
+              </template>
+            </el-table-column>
+          </el-table>
+
+
+
+
+          <el-form-item v-model="peoper" v-if="notSkuData.length>0" label="商品属性" prop="peopertyId">
+
             <el-form-item v-for="a in  notSkuData" :key="a.id" :label="a.peopertyName">
 
               <!--  0 下拉框     1 单选框      2  复选框   3  输入框  -->
@@ -92,27 +123,13 @@
 
               <el-input v-if="a.peopertyType==3"></el-input>
             </el-form-item>
+
+
           </el-form-item>
-
-
-
 
         </el-form>
 
-      <!--  <div style="margin-top:20px;" v-for="(item,index) in shopType" :key="index">
-          <el-button type="success" @click="processing()">一键生成</el-button>
-          <el-button type="success" @click="setType()">添加商品规格</el-button>
-
-        </div>-->
         <div>
-          <!-- 我记得有个scope属性的 -->
-        <!--  <el-table :data="tableData7" :span-method="objectSpanMethod1" border style="width: 100%; margin-top: 20px">
-            <el-table-column prop="color" :label="retName(index)" width="180"></el-table-column>
-            <el-table-column prop="cailiao" :label="retName(index)"></el-table-column>
-            <el-table-column prop="chima" :label="retName(3)"></el-table-column>
-            <el-table-column prop="kucun" label="库存"></el-table-column>
-            <el-table-column prop="moany" label="金钱"></el-table-column>
-          </el-table>-->
         </div>
       </div>
       <div class="info" v-if="active==3">
@@ -132,20 +149,101 @@
       return {
         active: 1,
         shopAdd:{},
-        BrandData:{},
-        TypeData:[],
-        TypeDatas:[],
-        peopertyAdd:{},
-        peoper:{},
+        BrandData:{},//品牌
+        TypeData:[],//所有分类的每个类型
+        TypeDatas:[],//所有分类的类型
+        peopertyAdd:{},//商品类型
+        peoper:{},     //商品属性
         peopertyData:[],
-        skuData:[],
-        notSkuData:[],
+        skuData:[],//sku属性
+        notSkuData:[],//非sku属性
         dan:"",
         xia:"",
-        duo:[]
-            //[{    name:"",typeNames:[{ type: "L", img: "" }]     }]
+        duo:[],
+        tableShow:false,
+        tableSkuData:[],//动态表头对应的表格数据
+        cols:[]//动态表头
+
       };
     },methods: {
+      /* 笛卡尔积    */
+      calcDescartes:function(array) {
+        if (array.length < 2) return array[0] || [];
+        return [].reduce.call(array, function (col, set) {
+          var res = [];
+          col.forEach(function (c) {
+            set.forEach(function (s) {
+              var t = [].concat(Array.isArray(c) ? c : [c]);
+              t.push(s);
+              res.push(t);
+            })
+          });
+          return res;
+        });
+      },// 合并行数
+  /*    objectSpanMethod1({ row, column, rowIndex, columnIndex }) {
+        // columnIndex === 0 找到第一列，实现合并随机出现的行数
+        if (columnIndex === 0) {
+          const _row = this.spanArr[rowIndex];
+          const _col = _row > 0 ? 1 : 0;
+          return {
+            rowspan: _row,
+            colspan: _col
+          };
+          // columnIndex === 1 找到第二列，合并他的列数
+        } else if (columnIndex === 1) {
+          const _row = this.spanArr1[rowIndex];
+          const _col = _row > 0 ? 1 : 0;
+          return {
+            rowspan: _row,
+            colspan: _col
+          };
+        }
+      },*/
+      //监听sku属性 改变事件
+      skuChange:function(){
+
+        //笛卡尔积的参数
+        let  kdej=[];
+        //清空表格数据
+        this.tableSkuData=[];
+        //清空动态表头数据
+        this.cols=[];
+        //判断是否要生成笛卡尔积
+        let flag=true;
+        for (let i = 0; i <this.skuData.length ; i++) {
+          this.cols.push({"id":this.skuData[i].id,"nameCH":this.skuData[i].peopertyName,"name":this.skuData[i].peopertyId});
+          kdej.push(this.skuData[i].ckValues);
+          if(this.skuData[i].ckValues.length==0){
+            for (let j = 0; j < this.ckValues.length; j++) {
+              flag=false;
+              break;
+            }
+
+          }
+        }
+        if(flag==true){
+          debugger;
+          console.log(this.newData);
+          let  datas=this.calcDescartes(kdej);
+          for (let i = 0; i <datas.length ; i++) {
+            //遍历笛卡尔积 的每一项   [红色,16g]  cols:[{"id":1,"name": ,"nameCH"}]
+
+            let jsonData = {}; //笛卡尔积 转为json的对象
+            for (let j = 0; j < datas[i].length; j++) {
+              //获取数据的key
+              let key = this.cols[j].name;
+              jsonData[key] = datas[i][j]
+
+            }
+            this.tableSkuData.push(jsonData);
+          }
+          console.log(this.tableSkuData);
+          console.log(datas);
+        }
+        this.tableShow=flag;
+      },
+
       next() {
         if (this.active++ > 3) this.active = 1;
       },
@@ -210,51 +308,69 @@
         this.notSkuData=[];
         this.skuData=[];
         this.$axios.get("http://localhost:8080/api/peoperty/queryPeopertyByTypeId?typeId="+val).then(rs=>{
-         /* console.log(rs.data);*/
+          /* console.log(rs.data);*/
           let peopertyData=rs.data;
 
           //判断分类是否有数据   更新 参数和规格
           if(peopertyData.length>0){
             for (let i = 0; i <peopertyData.length ; i++) {
-                      if (peopertyData[i].isSku==0){
-                                if(peopertyData[i].peopertyType!=3){
-                                  //得到属性类型不为3（输入框）的所有属性值
-                                        this.$axios.get("http://localhost:8080/api/peopertyValue/queryByPeoId?peoId="+peopertyData[i].id).then(rs=>{
-                                          peopertyData[i].values=rs.data;
-                                          this.skuData.push(peopertyData[i]);
-                                        }).catch(err=>console.log("查询属性信息失败"))
-                                }
-                                else{
-                                  this.skuData.push(peopertyData[i]);
-                                }
-                      }
-                      else{
-                              if(peopertyData[i].peopertyType!=3){
-                                 //得到属性类型不为3（输入框）的所有属性值
-                                      this.$axios.get("http://localhost:8080/api/peopertyValue/queryByPeoId?peoId="+peopertyData[i].id).then(rs=>{
-                                       peopertyData[i].values=rs.data;
-                                        this.notSkuData.push(peopertyData[i]);
-                                      }).catch(err=>console.log("查询属性信息失败"))
-                               }
-                              else{
-                                  this.notSkuData.push(peopertyData[i]);
-                                  console.log(this.notSkuData)
-                              }
-                      }
+              if (peopertyData[i].isSku==0){
+                if(peopertyData[i].peopertyType!=3){
+                  //得到属性类型不为3（输入框）的所有属性值
+                  this.$axios.get("http://localhost:8080/api/peopertyValue/queryByPeoId?peoId="+peopertyData[i].id).then(rs=>{
+                    peopertyData[i].values=rs.data;
+                    peopertyData[i].ckValues=[];
+                    this.skuData.push(peopertyData[i]);
+                  }).catch(err=>console.log("查询属性信息失败"))
+                }
+                else{
+                  peopertyData[i].ckValues=[];
+                  this.skuData.push(peopertyData[i]);
+                }
+              }else{
+                if(peopertyData[i].peopertyType!=3){
+                  //得到属性类型不为3（输入框）的所有属性值
+                  this.$axios.get("http://localhost:8080/api/peopertyValue/queryByPeoId?peoId="+peopertyData[i].id).then(rs=>{
+                    peopertyData[i].values=rs.data;
+                    /* console.log(rs.data.data);*/
+                    this.notSkuData.push(peopertyData[i]);
+
+                  }).catch(err=>console.log("查询属性信息失败"))
+                }
+                else{
+                  this.notSkuData.push(peopertyData[i]);
+                }
+              }
             }
           }else{
             this.notSkuData=[];
             this.skuData=[];
           }
         });
-        /*console.log(this.skuData);
-        console.log(this.notSkuData);*/
+        /* console.log(this.skuData);
+         console.log(this.notSkuData);*/
+      },//笛卡尔积算法
+      descartes(array){
+
+        if( array.length < 2 ) return array[0] || [];
+        return [].reduce.call(array, function(col, set) {
+          var res = [];
+          col.forEach(function(c) {
+            set.forEach(function(s) {
+              var t = [].concat( Array.isArray(c) ? c : [c] );
+              t.push(s);
+              res.push(t);
+            })});
+          return res;
+        });
       }
 
-    },created(){
-            this.$axios.get("http://localhost:8080/api/brand/queryAllBrandData").then(rs=>{
-              this.BrandData=rs.data;
-            }).catch(err=>{console.log("查询品牌信息失败")});
+
+    },
+    created(){
+      this.$axios.get("http://localhost:8080/api/brand/queryAllBrandData").then(rs=>{
+        this.BrandData=rs.data;
+      }).catch(err=>{console.log("查询品牌信息失败")});
       this.getTypeData();
     }
   }

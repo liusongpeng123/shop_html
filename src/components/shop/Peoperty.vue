@@ -161,10 +161,10 @@
             if (!value) {
               return callback(new Error('属性名不能为空'));
             }
-            if(/^[\u4e00-\u9fa5]+$/.test(value)){
+            if(/^[\u4e00-\u9fa50-9a-z]+$/i.test(value)){
               callback();
             }else{
-              callback(new Error('只能输入中文'));
+              callback(new Error('只能输入中文,字母,数字'));
             }
           };
           //属性值的英文验证
@@ -172,10 +172,10 @@
             if (!value) {
               return callback(new Error('属性名不能为空'));
             }
-            if(/^[\a-\z]+$/i.test(value)){
+            if(/^[a-z0-9]+$/i.test(value)){
               callback();
             }else{
-              callback(new Error('只能输入英文字母'));
+              callback(new Error('只能输入英文字母,数字'));
             }
           };
           return{
