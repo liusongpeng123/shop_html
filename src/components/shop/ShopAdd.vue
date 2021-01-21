@@ -100,7 +100,7 @@
               width="180">
 
               <template slot-scope="scope">
-                <el-input v-model="ku"/>
+                <el-input v-model="scope.row.kuCun"/>
               </template>
 
             </el-table-column>
@@ -108,7 +108,7 @@
               label="价格"
               width="180">
               <template slot-scope="scope">
-                <el-input v-model="jia"/>
+                <el-input v-model="scope.row.jiaGe"/>
               </template>
             </el-table-column>
           </el-table>
@@ -119,24 +119,23 @@
           <el-form-item v-model="peoper" v-if="notSkuData.length>0" label="商品属性" prop="peopertyId">
 
             <el-form-item v-for="a in  notSkuData" :key="a.id" :label="a.peopertyName">
-
+              <template slot-scope="scope">
               <!--  0 下拉框     1 单选框      2  复选框   3  输入框  -->
-              <el-select v-if="a.peopertyType==0" v-model="xia" placeholder="请选择">
-                <el-option v-for="item in a.values" :key="item.id"  :label="item.peopertyName" :value="item.nameCh"></el-option>
+              <el-select v-if="a.peopertyType==0" v-model="a.ckValues" placeholder="请选择">
+                <el-option v-for="item in a.values" :key="item.id"  :label="a.ckValues" :value="item.nameCh"></el-option>
               </el-select>
 
-              <el-radio-group  v-if="a.peopertyType==1" v-model="dan">
+              <el-radio-group  v-if="a.peopertyType==1" v-model="a.ckValues">
                 <el-radio v-for="item in a.values" :key="item.id" :label="item.nameCh"></el-radio>
               </el-radio-group>
 
-              <el-checkbox-group  v-if="a.peopertyType==2"  v-model="a.notValues" @change="notSkuChange">
+              <el-checkbox-group  v-if="a.peopertyType==2"  v-model="a.ckValues" >
                 <el-checkbox v-for="item in a.values" :key="item.id" :label="item.nameCh" name="type"></el-checkbox>
               </el-checkbox-group>
-
-              <el-input v-if="a.peopertyType==3"></el-input>
+            <!--  @change="notSkuChange"-->
+              <el-input v-if="a.peopertyType==3" v-model="a.ckValues"></el-input>
+              </template>
             </el-form-item>
-
-
           </el-form-item>
           <el-button type="primary" @click="addProduct">添加</el-button>
         </el-form>
@@ -159,7 +158,7 @@
     name:"ShopAdd",
     data() {
       return {
-        /*maxlength:"",*/
+
         active: 1,
         shopAdd:{},
         BrandData:{},//品牌
@@ -178,20 +177,33 @@
         cols:[],//动态表头
         sk:{},//非sku 选中的值
         sss:{},
-        ku:"",
-        jia:""
+        kuCun:"",
+        jiaGe:"",
       };
     },methods: {
       addProduct(){
-
+        console.log(this.peopertyAdd);
         this.shopAdd.peopertyId=this.peopertyAdd.typeId;
-       /* console.log(this.shopAdd);*/
-      /*console.log(this.notSkuData);*/
-        for (let i = 0; i <this.tableSkuData.length ; i++) {
-          console.log(this.tableSkuData[i]);
+
+              //sku数据
+             /* console.log(this.tableSkuData);*/
+              //非sku的数据
+           /*   console.log(this.notSkuData);*/
+        let attrs=[];
+        for (let i = 0; i <this.notSkuData.length ; i++) {
+          let attdata={};
+          attdata[this.notSkuData[i].peopertyId]=this.notSkuData[i].ckValues;
+          attrs.push(attdata);
         }
-
-
+        console.log(attrs);
+        //将sku的属性放到shopAdd 对象中
+        this.shopAdd.sku=JSON.stringify(this.tableSkuData);
+        //将非sku的属性放到shopAdd 对象中
+        this.shopAdd.attr=JSON.stringify(attrs);
+          console.log(this.$qs.stringify(this.shopAdd));
+              this.$axios.post("http://localhost:8080/api/shop/addShop",this.$qs.stringify(this.shopAdd)).then(rs=>{
+                this.$message.success("添加成功");
+              }).catch(err=>console.log("新增数据失败"))
       },
       /* 笛卡尔积    */
       calcDescartes:function(array) {
@@ -208,18 +220,18 @@
           return res;
         });
       },
-      notSkuChange(){
-       /* console.log(this.notSkuData);*/
+     /* notSkuChange(){
+       /!* console.log(this.notSkuData);*!/
         for (let i = 0; i <this.notSkuData.length ; i++) {
           let no=this.notSkuData[i].notValues;
 
           let pd=this.notSkuData[i].peopertyId;
-         /* console.log(this.notSkuData[i].peopertyId);*/
+         /!* console.log(this.notSkuData[i].peopertyId);*!/
          this.sk='{"'+pd+'":"'+no+'"}' ;   //{"pd":"no"}
-          /*console.log(this.sk);*/
+         console.log(this.sk);
 
         }
-      },
+      },*/
       //监听sku属性 改变事件
       skuChange:function(){
 
@@ -389,16 +401,6 @@
       }).catch(err=>{console.log("查询品牌信息失败")});
       this.getTypeData();
     },
-   /* watch:{
-      shopTypeForm:{
-        handler:function(val,oldval){
-          this.tableShow=false
-          console.log("-------------------------------")
-          this.queryShuXing(val.typeId)
-        },
-        deep:true//对象内部的属性监听，也叫深度监听
-      }
-  }*/
   }
 </script>
 <style>
