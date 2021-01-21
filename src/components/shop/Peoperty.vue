@@ -98,31 +98,26 @@
       </el-dialog>
       <!--属性值表格信息展示模板-->
       <el-dialog :title="valueTitle" :visible.sync="peopertyValueFlag">
-        <el-button type="success" plain @click="toAddPeopertyValue">新增</el-button>
+        <el-button  type="primary" icon="el-icon-plus" plain size="medium" @click="toAddPeopertyValue">新增</el-button>
         <el-table :data="peopertyValueData" style="width: 100%" border>
-          <el-table-column
-            prop="id"
-            label="属性值id">
-          </el-table-column>
 
-          <el-table-column
+          <el-table-column align="center"
             prop="name"
             label="属性值英文名">
           </el-table-column>
 
-          <el-table-column
+          <el-table-column align="center"
             prop="nameCh"
             label="属性值中文名"
           >
           </el-table-column>
 
-          <el-table-column label="操作">
+          <el-table-column label="操作" align="center">
             <template slot-scope="scope">
-              <el-button type="danger" plain
+              <el-button type="danger" plain icon="el-icon-edit" size="medium"
                 @click="toUpdatePeopertyValue(scope.row.id)">修改</el-button>
-              <el-button
-                type="warning" plain
-                @click="deletePeopertyValue( scope.row.id)">删除</el-button>
+              <el-button type="warning" plain icon="el-icon-delete" size="medium"
+                @click="deletePeopertyValue( scope.row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -154,7 +149,6 @@
 <script>
     export default {
         name: "Peoperty",
-
         data(){
           //属性值的中文验证
           let checkChname = (rule, value, callback) => {
@@ -275,19 +269,23 @@
         addPeoperty(){
           //如果有id说明是修改
           if (this.addForm.id!=null) {
+            debugger;
               this.$axios.post("http://localhost:8080/api/peoperty/updatePeoperty",this.$qs.stringify(this.addForm)).then(rs=>{
                 //关闭弹框，重新查询
                 this.addFormFlag = false;
-                this.queryData(1);
+                /*this.queryData(1);*/
               }).catch(error=>{
                   console.log("修改失败")
               })
           }
           //如果没有id说明是新增
           else {
+            debugger;
+            /*this.addForm={};*/
             this.$axios.post("http://localhost:8080/api/peoperty/addPeoperty",this.$qs.stringify(this.addForm)).then(rs=>{
               this.addFormFlag = false;
-              this.queryData(1)
+              this.queryPeopertyValueTableData(this.addForm.peoId);
+              this.$message.success("新增成功");
             }).catch(err=>console.log("新增失败"))
           }
         },
@@ -375,8 +373,10 @@
           }).catch(err=>{console.log("查询失败")})
         },
         //属性值的删除
-        deletePeopertyValue(id){
-          this.$axios.post("http://localhost:8080/api/peopertyValue/deletePeopertyValue?id="+id).then(rs=>{
+        deletePeopertyValue(row){
+          this.$axios.post("http://localhost:8080/api/peopertyValue/deletePeopertyValue?id="+row.id).then(rs=>{
+            //重新加载查询属性值
+            this.queryPeopertyValueTableData(row.peoId);
             this. queryData(1);
            /* this.peopertyValue(this.id);*/
           }).catch(err=>console.log("删除失败"))
@@ -397,18 +397,13 @@
         },
         //跳转属性值的新增页面
         toAddPeopertyValue(){
-       /*   debugger;*/
           //清空里面的值
-           /*this.addPeopertyValueForm={};*/
+          this.addPeopertyValueForm.name="";
+          this.addPeopertyValueForm.nameCh="";
           this.addPeopertyValueFormFlag=true;
     },
         //属性值修改和新增的提交
         addPeopertyValue(){
-           /*debugger;*/
-
-
-
-
           //如果有id 证明是修改
           if (this.addPeopertyValueForm.id!=null) {
 
@@ -417,7 +412,9 @@
                 this.$axios.post("http://localhost:8080/api/peopertyValue/updatePeopertyValue",this.$qs.stringify(this.addPeopertyValueForm)).then(rs=>{
                   //关闭弹框，重新查询
                   this.addPeopertyValueFormFlag = false;
-                  this.queryData(1);
+                  this.$message.success("修改属性值成功");
+                  //重新加载查询属性值
+                  this.queryPeopertyValueTableData(this.addPeopertyValueForm.peoId);
                 }).catch(error=>{
                   console.log("修改失败")
                 })

@@ -176,7 +176,6 @@
         tableSkuData:[],//动态表头对应的表格数据
         cols:[],//动态表头
         sk:{},//非sku 选中的值
-        sss:{},
         kuCun:"",
         jiaGe:"",
       };
