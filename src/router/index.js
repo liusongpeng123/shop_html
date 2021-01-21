@@ -43,6 +43,11 @@ export default new Router({
           path: '/shopAdd',
           component: () => import(/* webpackChunkName: "dashboard" */ '../components/shop/ShopAdd.vue'),
           meta: { title: '商品新增' }
+        },
+        {
+          path: '/shop',
+          component: () => import(/* webpackChunkName: "dashboard" */ '../components/shop/Shop.vue'),
+          meta: { title: '商品管理' }
         }
       ]
     }

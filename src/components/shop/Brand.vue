@@ -191,7 +191,7 @@
         }
       },toUpdate(id){
        /* this.addBrandForm.imgpath="";*/
-        this.updateFormFlag=true;
+     /*   this.updateFormFlag=true;*/
         var tthis=this;
         this.$axios.post("http://localhost:8080/api/brand/queryById?id="+id).then(rs=>{
           this.addFormFlag=true;

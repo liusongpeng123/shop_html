@@ -370,18 +370,15 @@
                 }
               }else{
                 if(peopertyData[i].peopertyType!=3){
+                  peopertyData[i].ckValues=[];
                   //得到属性类型不为3（输入框）的所有属性值
                   this.$axios.get("http://localhost:8080/api/peopertyValue/queryByPeoId?peoId="+peopertyData[i].id).then(rs=>{
                     peopertyData[i].values=rs.data;
-
-                    //存放被选中的框中的值
-                    peopertyData[i].notValues=[];
-
                     this.notSkuData.push(peopertyData[i]);
-
                   }).catch(err=>console.log("查询属性信息失败"))
                 }
                 else{
+
                   this.notSkuData.push(peopertyData[i]);
                 }
               }

@@ -68,36 +68,49 @@
             title: '表单相关',
             subs: [
               {
+                icon:   'el-icon-light-rain',
                 index: 'type',
                 title: '类目管理'
               },
               {
+                icon:'el-icon-lightning',
                 index: 'brand',
                 title: '品牌管理'
               },
               {
+                icon:'el-icon-lightning',
                 index: 'peoperty',
                 title: '属性管理'
               },
               {
+                icon:'el-icon-heavy-rain',
                 index: 'shopAdd',
                 title: '商品新增'
+              },{
+                icon:'el-icon-sunrise',
+                index: 'shop',
+                title: '商品管理'
               },
+             // el-icon-partly-cloudy   el-icon-cloudy-and-sunny     el-icon-moon   el-icon-moon-night
               {
+                icon:'el-icon-sunrise-1',
                 index: '3-2',
                 title: '三级菜单',
                 subs: [
                   {
+                    icon:'el-icon-sunset',
                     index: 'editor',
                     title: '富文本编辑器'
                   },
                   {
+                    icon:'el-icon-sunny',
                     index: 'markdown',
                     title: 'markdown编辑器'
                   }
                 ]
               },
               {
+                icon:'el-icon-cloudy',
                 index: 'upload',
                 title: '文件上传'
               }
