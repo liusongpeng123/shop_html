@@ -34,19 +34,23 @@
         <el-table-column label="库存" prop="stocks"  align="center">
         </el-table-column>
 
+        <el-table-column label="编辑属性信息" align="center" >
+          <template slot-scope="scope" >
+            <el-button type="info"
+                 @click="handleEdit(scope.row.peopertyId, scope.row.id)">编辑</el-button>
+          </template>
+        </el-table-column>
+
         <el-table-column label="排序字段" prop="sortNum"  align="center">
         </el-table-column>
 
-        <el-table-column label="操作" align="center" width="240px">
+        <el-table-column label="操作" align="center" width="200px">
           <template slot-scope="scope" >
-            <el-button type="info" plain
+            <el-button type="warning" plain
               @click="toUpdate(scope.row.id)">修改</el-button>
             <el-button
-              type="warning" plain
+              type="danger" plain
               @click="handleDelete( scope.row.id)">删除</el-button>
-            <el-button type="success" plain
-                       @click="handleEdit( scope.row.id)">编辑</el-button>
-
           </template>
         </el-table-column>
 
@@ -70,16 +74,18 @@
         </el-option>
       </el-select>
     </el-form-item>
+
+
     <el-form-item v-model="peopertyAdd.peopertyId" v-if="skuData.length>0" label="商品sku" prop="peopertyId">
 
       <el-form-item v-for="a in  skuData" :key="a.id" :label="a.peopertyName">
 
         <!--  0 下拉框     1 单选框      2  复选框   3  输入框  -->
-        <el-select v-if="a.peopertyType==0" v-model="xia" placeholder="请选择">
+        <el-select v-if="a.peopertyType==0" v-model="a.ckValues" placeholder="请选择">
           <el-option v-for="item in a.values" :key="item.id"  :label="item.peopertyName" :value="item.nameCh"></el-option>
         </el-select>
 
-        <el-radio-group  v-if="a.peopertyType==1" v-model="dan">
+        <el-radio-group  v-if="a.peopertyType==1" v-model="a.ckValues">
           <el-radio v-for="item in a.values" :key="item.id" :label="item.nameCh"></el-radio>
         </el-radio-group>
 
@@ -143,7 +149,7 @@
         </template>
       </el-form-item>
     </el-form-item>
-    <el-button type="primary" @click="addProduct">添加</el-button>
+    <!--<el-button type="primary" @click="addProduct">添加</el-button>-->
   </el-form>
 
       </el-dialog>
@@ -239,218 +245,155 @@
             sk:{},//非sku 选中的值
             kuCun:"",
             jiaGe:"",
+            xia:"",
+            dan:""
           }
-        },methods:{
-        imgCallBack:function(response, file, fileList){ //图片上传的回调函数
+        },methods: {
+        imgCallBack: function (response, file, fileList) { //图片上传的回调函数
           // 赋值
-          this.updateShopForm.imgpath=response.data;
+          this.updateShopForm.imgpath = response.data;
         },
-        handleCurrentChange(page){
-          this.queryData(page);},
-        handleSizeChange:function(limit){ //跳转页面
-          this.limit=limit;
+        handleCurrentChange(page) {
+          this.queryData(page);
+        },
+        handleSizeChange: function (limit) { //跳转页面
+          this.limit = limit;
           this.queryData(1);
         },
-        toUpdate(id){
-          this.brandData=[];
-         /* this.TypeData=[];*/
-          this.updateFormFlag=true;
-          this.$axios.get("http://localhost:8080/api/shop/quertyShopById?id="+id).then(rs=>{
-            this.updateShopForm=rs.data;
+        toUpdate(id) {
+          this.brandData = [];
+          /* this.TypeData=[];*/
+          this.updateFormFlag = true;
+          this.$axios.get("http://localhost:8080/api/shop/quertyShopById?id=" + id).then(rs => {
+            this.updateShopForm = rs.data;
 
             this.getBrandData();
-          }).catch(err=>console.log("修改异常"))
+          }).catch(err => console.log("修改异常"))
         },
-        updateShop(){
-          this.$axios.post("http://localhost:8080/api/shop/updateShop",this.$qs.stringify(this.updateShopForm)).then(rs=>{
+        updateShop() {
+          this.$axios.post("http://localhost:8080/api/shop/updateShop", this.$qs.stringify(this.updateShopForm)).then(rs => {
             //关闭弹框，重新查询
             this.updateFormFlag = false;
             this.queryData(1);
-          }).catch(error=>{
+          }).catch(error => {
             console.log("修改失败")
           })
         },
-        handleDelete(id){
-          this.$axios.post("http://localhost:8080/api/shop/deleteShop?id="+id).then(rs=>{
-            this. queryData(1);
-          }).catch(err=>{
-            console.log("删除失败")})
+        handleDelete(id) {
+          this.$axios.delete("http://localhost:8080/api/shop/deleteShop?id=" + id).then(rs => {
+            this.queryData(1);
+          }).catch(err => {
+            console.log("删除失败")
+          })
         },
-        getBrandData(){
-          this.$axios.get("http://localhost:8080/api/brand/queryAllBrandData").then(rs=>{
-            this.brandData=rs.data;
-          }).catch(err=>{console.log("查询品牌信息失败")});
+        getBrandData() {
+          this.$axios.get("http://localhost:8080/api/brand/queryAllBrandData").then(rs => {
+            this.brandData = rs.data;
+          }).catch(err => {
+            console.log("查询品牌信息失败")
+          });
         },//查询品牌的下拉框
-        getTypeData(){
-          this.$axios.get("http://localhost:8080/api/type/getData").then(rs=>{
+        getTypeData() {
+          this.$axios.get("http://localhost:8080/api/type/getData").then(rs => {
             //定义的数据     TypeDatas 等于查询出来的所有数据
-            this.TypeDatas=rs.data.data;
+            this.TypeDatas = rs.data.data;
             //查看有没有子节点数据
             this.getChildrenType();
-            for (let i = 0; i <this.TypeData.length ; i++) {
-              this.typeName="";
+            for (let i = 0; i < this.TypeData.length; i++) {
+              this.typeName = "";
               this.diGui(this.TypeData[i]);
               //给name重新赋值
-              this.TypeData[i].name=this.typeName.split("/").reverse().join("/").substr(0,this.typeName.length-1);
+              this.TypeData[i].name = this.typeName.split("/").reverse().join("/").substr(0, this.typeName.length - 1);
 
             }
-          }).catch(err=>{
-            console.log("查询类型失败")})
-        },diGui(node){
-        if(node.pid!=0){ //临界值
-          this.typeName+="/"+node.name;
-          //上级节点
-          for (let i = 0; i <this.TypeDatas.length ; i++) {
-            if(node.pid==this.TypeDatas[i].id){
-              this.diGui(this.TypeDatas[i]);
+          }).catch(err => {
+            console.log("查询类型失败")
+          })
+        },
+        diGui(node) {
+          if (node.pid != 0) { //临界值
+            this.typeName += "/" + node.name;
+            //上级节点
+            for (let i = 0; i < this.TypeDatas.length; i++) {
+              if (node.pid == this.TypeDatas[i].id) {
+                this.diGui(this.TypeDatas[i]);
+                break;
+              }
+            }
+
+          } else {
+            this.typeName += "/" + node.name;
+          }
+        },//查询类型的下拉框
+        getChildrenType: function () {
+          //遍历所有的节点数据
+          for (let i = 0; i < this.TypeDatas.length; i++) {
+            //节点中所有数据的一条
+            let node = this.TypeDatas[i];
+            //判断有没有子节点
+            this.isChildrenNode(node);
+          }
+        },
+        isChildrenNode: function (node) {
+          let rs = true; //标示
+          for (let i = 0; i < this.TypeDatas.length; i++) {
+            //如果数据的id有指向所有数据的pid 证明是下面还有节点的
+            if (node.id == this.TypeDatas[i].pid) {
+              rs = false;
               break;
             }
           }
-
-        }else{
-          this.typeName+="/"+node.name;
-        }
-      },//查询类型的下拉框
-        getChildrenType:function(){
-        //遍历所有的节点数据
-        for (let i = 0; i <this.TypeDatas.length ; i++) {
-          //节点中所有数据的一条
-          let  node=this.TypeDatas[i];
-          //判断有没有子节点
-          this.isChildrenNode(node);
-        }
-      },isChildrenNode:function(node){
-        let rs=true; //标示
-        for (let i = 0; i <this.TypeDatas.length ; i++) {
-          //如果数据的id有指向所有数据的pid 证明是下面还有节点的
-          if(node.id==this.TypeDatas[i].pid){
-            rs=false;
-            break;
+          if (rs == true) {
+            //将数据放到表中需要的字段中
+            this.TypeData.push(node);
           }
-        }
-        if(rs==true){
-          //将数据放到表中需要的字段中
-          this.TypeData.push(node);
-        }
-      },
-        queryData(page){
-          this.$axios.get("http://localhost:8080/api/shop/quertyShopData?limit="+this.limit+"&page="+page).then(rs=>{
-            this.tableData=rs.data.data;
-            this.length=rs.data.count;
-          }).catch(err=>console.log("加载商品列表失败"))
         },
-        handleEdit(id){
-          console.log(id);
-                    this.updatePeopertyFormFlag=true;
-                    this.getTypeData();
-                      this.peopertyAdd.typeId=id;
-                 /*   this.$axios.get("http://localhost:8080/api/shopProduct/queryShopProductById?id="+id).then(rs=>{
-                      console.log(rs.data);
-                    }).catch(err=>console.log("查询属性失败"))*/
-                   /* this.peopertyId=this.tableData.*/
-
-    },
-        selectChange(val){
-
-          this.notSkuData=[];
-          this.skuData=[];
-          this.$axios.get("http://localhost:8080/api/peoperty/queryPeopertyByTypeId?typeId="+val).then(rs=>{
-            //通过下拉框的类型id查询到所有的属性
-            let peopertyData=rs.data;
-            //判断分类是否有数据   更新 参数和规格
-            if(peopertyData.length>0){
-              for (let i = 0; i <peopertyData.length ; i++) {
-                //判断是否为sku属性
-                if (peopertyData[i].isSku==0){
-                  //不判断属性类型为3（输入框）的数据
-                  if(peopertyData[i].peopertyType!=3){
-                    //得到属性类型不为3（输入框）的所有属性值
-                    this.$axios.get("http://localhost:8080/api/peopertyValue/queryByPeoId?peoId="+peopertyData[i].id).then(rs=>{
-                      //多选框所有的属性值
-                      peopertyData[i].values=rs.data;
-                      //存放被选中的框中的值
-                      peopertyData[i].ckValues=[];
-                      this.skuData.push(peopertyData[i]);
-                    }).catch(err=>console.log("查询属性信息失败"))
-                  }
-                  else{
-                    peopertyData[i].ckValues=[];
-                    this.skuData.push(peopertyData[i]);
-                  }
-                }else{
-                  if(peopertyData[i].peopertyType!=3){
-                    peopertyData[i].ckValues=[];
-                    //得到属性类型不为3（输入框）的所有属性值
-                    this.$axios.get("http://localhost:8080/api/peopertyValue/queryByPeoId?peoId="+peopertyData[i].id).then(rs=>{
-                      peopertyData[i].values=rs.data;
-                      this.notSkuData.push(peopertyData[i]);
-                    }).catch(err=>console.log("查询属性信息失败"))
-                  }
-                  else{
-
-                    this.notSkuData.push(peopertyData[i]);
-                  }
-                }
-              }
-            }else{
-              this.notSkuData=[];
-              this.skuData=[];
-            }
-          });
-          /* console.log(this.skuData);
-           console.log(this.notSkuData);*/
+        queryData(page) {
+          this.$axios.get("http://localhost:8080/api/shop/quertyShopData?limit=" + this.limit + "&page=" + page).then(rs => {
+            this.tableData = rs.data.data;
+            this.length = rs.data.count;
+          }).catch(err => console.log("加载商品列表失败"))
         },
-        addProduct(){
-          console.log(this.peopertyAdd);
-          this.shopAdd.peopertyId=this.peopertyAdd.typeId;
-
-          //sku数据
-          /* console.log(this.tableSkuData);*/
-          //非sku的数据
-          /*   console.log(this.notSkuData);*/
-          let attrs=[];
-          for (let i = 0; i <this.notSkuData.length ; i++) {
-            let attdata={};
-            attdata[this.notSkuData[i].peopertyId]=this.notSkuData[i].ckValues;
-            attrs.push(attdata);
-          }
-       /*   console.log(attrs);*/
-          //将sku的属性放到shopAdd 对象中
-          this.shopAdd.sku=JSON.stringify(this.tableSkuData);
-          //将非sku的属性放到shopAdd 对象中
-          this.shopAdd.attr=JSON.stringify(attrs);
-          /*console.log(this.$qs.stringify(this.shopAdd));*/
-          this.$axios.post("http://localhost:8080/api/shop/addShop",this.$qs.stringify(this.shopAdd)).then(rs=>{
-            this.$message.success("添加成功");
-          }).catch(err=>console.log("新增数据失败"))
-        }, //监听sku属性 改变事件
-        skuChange(){
+        handleEdit(peopertyId, pid) {
+          /*console.log(peopertyId, pid);*/
+          this.updatePeopertyFormFlag = true;
+          this.getTypeData();
+          this.peopertyAdd.typeId = peopertyId;//回显分类的下拉框
+          this.selectChange(peopertyId, pid);//回显属性数据  peopertyId 类型的id      id就是属性值表的proId
+          //回显table
+          this.skuChange();
+        },
+        skuChange() {
 
           //笛卡尔积的参数
-          let  kdej=[];
+          let kdej = [];
           //清空表格数据
-          this.tableSkuData=[];
+          this.tableSkuData = [];
           //清空动态表头数据
-          this.cols=[];
+          this.cols = [];
           //判断是否要生成笛卡尔积
-          let flag=true;
+          let flag = true;
           //遍历sku所有数据
-          for (let i = 0; i <this.skuData.length ; i++) {
+          for (let i = 0; i < this.skuData.length; i++) {
             //将sku属性 放入动态表头中
-            this.cols.push({"id":this.skuData[i].id,"nameCH":this.skuData[i].peopertyName,"name":this.skuData[i].peopertyId});
+            this.cols.push({
+              "id": this.skuData[i].id,
+              "nameCH": this.skuData[i].peopertyName,
+              "name": this.skuData[i].peopertyId
+            });
             //将此属性选中的选项值放入笛卡尔积参数中
             //得到当前sku选中的值  颜色  选中的值 [红色,绿色]    尺寸 [l,x]
             kdej.push(this.skuData[i].ckValues);
             //判断此sku的复选框是否为选中
-            if(this.skuData[i].ckValues.length==0){
-              flag=false;
+            if (this.skuData[i].ckValues.length == 0) {
+              flag = false;
               break;
             }
           }
-          if(flag==true){
+          if (flag == true) {
             /*debugger;*/
-            let  datas=this.calcDescartes(kdej);
-            for (let i = 0; i <datas.length ; i++) {
+            let datas = this.calcDescartes(kdej);
+            for (let i = 0; i < datas.length; i++) {
               //遍历笛卡尔积 的每一项   [红色,16g]  cols:[{"id":1,"name": ,"nameCH"}]
               //笛卡尔积 转为json的对象
               let jsonData = {}; //笛卡尔积 转为json的对象
@@ -465,10 +408,9 @@
             /*console.log(this.tableSkuData);*/
             /*console.log(datas);*/
           }
-          this.tableShow=flag;
+          this.tableShow = flag;
         },
-
-        calcDescartes:function(array) {
+        calcDescartes: function (array) {
           if (array.length < 2) return array[0] || [];
           return [].reduce.call(array, function (col, set) {
             var res = [];
@@ -482,6 +424,99 @@
             return res;
           });
         },//笛卡尔积
+        selectChange(peopertyId, pid) {
+          //先查找到类型所对应的数据
+          this.$axios.get("http://localhost:8080/api/shopProduct/queryShopProductByProId?proId=" + pid).then(rs => {
+            let peopertyData = rs.data;
+            /* console.log(rs.data);*/
+            this.notSkuData = [];
+            this.skuData = [];
+            this.$axios.get("http://localhost:8080/api/peoperty/queryPeopertyByTypeId?typeId=" + peopertyId).then(rs => {
+              let attrDatas = rs.data;
+              /* console.log(attrDatas);*/
+
+              if (attrDatas.length > 0) {
+                for (let i = 0; i < attrDatas.length; i++) {
+                  if (attrDatas[i].isSku == 0) {
+                    if (attrDatas[i].peopertyType != 3) {
+                       /* 0 下拉框     1 单选框      2  复选框   3  输入框  */
+                      debugger;
+                      if (attrDatas[i].peopertyType == 2) {
+                        if (this.getValeu(attrDatas[i].peopertyId, peopertyData) == "") {
+                          attrDatas[i].ckValues=[];
+                        }else{
+                          attrDatas[i].ckValues=this.getValeu(attrDatas[i].peopertyId,peopertyData);
+                        }
+                      }else{
+                        attrDatas[i].ckValues=this.getValeu(attrDatas[i].peopertyId,peopertyData);
+                      }
+                      //发送请求，查询此属性所对应的属性值
+                      this.$axios.get("http://localhost:8080/api/peopertyValue/queryByPeoId?peoId="+attrDatas[i].id).then(rs=>{
+                        attrDatas[i].values=rs.data;
+                            /*console.log(rs.data.data);*/
+                        this.skuData.push(attrDatas[i]);//skuData
+                      })
+
+
+                    }else{
+                      attrDatas[i].ckValues=this.getValeu(attrDatas[i].peopertyId,peopertyData);
+                      this.skuData.push(attrDatas[i]);//skuData
+                    }
+                  }else{
+                    if(attrDatas[i].peopertyType!=3){
+                      //回显
+                      if(attrDatas[i].peopertyType==2){
+                        if(this.getValeu(attrDatas[i].peopertyId,peopertyData)==""){
+                          attrDatas[i].ckValues=[];
+                        }else{
+                          attrDatas[i].ckValues=this.getValeu(attrDatas[i].peopertyId,peopertyData);
+                        }
+                      }else{
+                        attrDatas[i].ckValues=this.getValeu(attrDatas[i].peopertyId,peopertyData);
+                      }
+                      //发起请求 查询此属性对应的选项值
+                      this.$axios.get("http://localhost:8080/api/peopertyValue/queryByPeoId?peoId="+attrDatas[i].id).then(rs=>{
+                        attrDatas[i].values=rs.data;
+                        // debugger;
+                        attrDatas[i].ckValues=this.getValeu(attrDatas[i].peopertyId,peopertyData);
+                        this.notSkuData.push(attrDatas[i]);//notSkuData
+                      })
+                    }else{
+                      attrDatas[i].ckValues=[];
+                      this.notSkuData.push(attrDatas[i]);//notSkuData
+                    }
+                  }
+                }
+              }
+              else{
+                this.skuData=[];
+                this.notSkuData=[];
+              }
+            });
+           /* console.log(this.notSkuData);
+            console.log(this.skuData);*/
+
+          })
+        },
+        getValeu: function (key, data) {
+          let arrValue = [];
+          debugger;
+          for (let i = 0; i < data.length; i++) {
+            let objData = JSON.parse(data[i].attrData);
+            if (objData[key] != null) {
+              if(data[i].stockss!=null){
+                if(arrValue.indexOf(objData[key])==-1){
+                  arrValue.push(objData[key]);
+                  console.log(arrValue);
+                }
+
+              }else{
+                return objData[key];
+              }
+            }
+          }
+          return arrValue;
+        }
       },
       created(){
           this.queryData(1);
