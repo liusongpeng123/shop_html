@@ -189,7 +189,11 @@
             peopertyValueData:[],
            /* peoId:"",*/
             //新增属性值的表单需要的字段
-            addPeopertyValueForm:{},
+            addPeopertyValueForm:{
+              name:"",
+              nameCh:"",
+              id:""
+            },
             //新增属性值的状态默认设置为关闭
             addPeopertyValueFormFlag:false,
             //属性值的弹框状态设置为关闭
@@ -213,7 +217,6 @@
                 {  max: 10, message: '长度不超过10 个字符', trigger: 'blur' },
                 { validator:checkName,trigger: 'blur' }
               ]
-
             }
           }
         },methods:{
@@ -273,6 +276,8 @@
               this.$axios.post("http://localhost:8080/api/peoperty/updatePeoperty",this.$qs.stringify(this.addForm)).then(rs=>{
                 //关闭弹框，重新查询
                 this.addFormFlag = false;
+                this.queryPeopertyValueTableData(this.addForm.peoId);
+                this.$message.success("修改成功");
                 /*this.queryData(1);*/
               }).catch(error=>{
                   console.log("修改失败")
@@ -299,11 +304,8 @@
         },
         //属性的跳转页面
         toAddPeoperty(){
-          //清空
-          this.addForm={};
           //打开弹框
           this.addFormFlag=true;
-
         },
         //获得类型
         getTypeData(){
@@ -336,7 +338,7 @@
             this.typeName+="/"+node.name;
           }
         },
-        getChildrenType:function(){
+        getChildrenType(){
           //遍历所有的节点数据
           for (let i = 0; i <this.TypeDatas.length ; i++) {
             //节点中所有数据的一条
@@ -344,7 +346,8 @@
             //判断有没有子节点
             this.isChildrenNode(node);
           }
-        },isChildrenNode:function(node){
+        },
+        isChildrenNode(node){
           let rs=true; //标示
           for (let i = 0; i <this.TypeDatas.length ; i++) {
             //如果数据的id有指向所有数据的pid 证明是下面还有节点的
@@ -377,8 +380,7 @@
           this.$axios.post("http://localhost:8080/api/peopertyValue/deletePeopertyValue?id="+row.id).then(rs=>{
             //重新加载查询属性值
             this.queryPeopertyValueTableData(row.peoId);
-            this. queryData(1);
-           /* this.peopertyValue(this.id);*/
+            this.$message.success("删除属性值成功");
           }).catch(err=>console.log("删除失败"))
         },
         //跳转属性值的修改页面
@@ -398,6 +400,7 @@
         //跳转属性值的新增页面
         toAddPeopertyValue(){
           //清空里面的值
+          this.addPeopertyValueForm.id="";
           this.addPeopertyValueForm.name="";
           this.addPeopertyValueForm.nameCh="";
           this.addPeopertyValueFormFlag=true;
@@ -405,8 +408,8 @@
         //属性值修改和新增的提交
         addPeopertyValue(){
           //如果有id 证明是修改
-          if (this.addPeopertyValueForm.id!=null) {
-
+          if (this.addPeopertyValueForm.id!="") {
+                debugger;
             this.$refs["addPeopertyValueForm"].validate((valid) => {
               if (valid) {
                 this.$axios.post("http://localhost:8080/api/peopertyValue/updatePeopertyValue",this.$qs.stringify(this.addPeopertyValueForm)).then(rs=>{
@@ -431,7 +434,10 @@
             this.$axios.post("http://localhost:8080/api/peopertyValue/addPeopertyValue",this.$qs.stringify(this.addPeopertyValueForm)).then(rs=>{
               //关闭弹框，重新查询
               this.addPeopertyValueFormFlag = false;
-              this.queryData(1)
+          /*    this.queryData(1)*/
+              this.$message.success("新增属性值成功");
+              //重新加载查询属性值
+              this.queryPeopertyValueTableData(this.addPeopertyValueForm.peoId);
             }).catch(err=>console.log("新增失败"))
           }
         }

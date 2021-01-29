@@ -67,16 +67,15 @@
       <el-dialog
         title="修改商品属性信息" :model="updatePeopertyForm"
         :visible.sync="updatePeopertyFormFlag" width="40%">
-  <el-form ref="peopertyAdd" :model="peopertyAdd" label-width="80px" >
-    <el-form-item label="商品类型" prop="typeId">
-      <el-select v-model="peopertyAdd.typeId" placeholder="请选择分类" @change="selectChange">
-        <el-option v-for="item in TypeData" :key="item.id" :label="item.name" :value="item.id">
-        </el-option>
-      </el-select>
-    </el-form-item>
+          <el-form ref="peopertyAdd" :model="peopertyAdd" label-width="80px" >
+             <el-form-item label="商品类型" prop="typeId">
+                <el-select v-model="peopertyAdd.typeId" placeholder="请选择分类" @change="selectChange">
+                    <el-option v-for="item in TypeData" :key="item.id" :label="item.name" :value="item.id"></el-option>
+                </el-select>
+             </el-form-item>
 
 
-    <el-form-item v-model="peopertyAdd.peopertyId" v-if="skuData.length>0" label="商品sku" prop="peopertyId">
+            <el-form-item v-model="peopertyAdd.peopertyId" v-if="skuData.length>0" label="商品sku" prop="peopertyId">
 
       <el-form-item v-for="a in  skuData" :key="a.id" :label="a.peopertyName">
 
@@ -93,13 +92,13 @@
           <el-checkbox v-for="item in a.values" :key="item.id" :label="item.nameCh" ></el-checkbox>
         </el-checkbox-group>
 
-        <el-input v-if="a.peopertyType==3"></el-input>
+        <el-input v-if="a.peopertyType==3" v-model="a.ckValues"></el-input>
       </el-form-item>
 
 
     </el-form-item>
 
-    <el-table
+          <el-table
       v-if="tableShow"
       :data="tableSkuData"
       style="width: 100%" >
@@ -126,45 +125,42 @@
     </el-table>
 
 
+          <el-form-item v-model="peoper" v-if="notSkuData.length>0" label="商品属性" prop="peopertyId">
 
+          <el-form-item v-for="a in  notSkuData" :key="a.id" :label="a.peopertyName">
+                 <template slot-scope="scope">
+                       <!--  0 下拉框     1 单选框      2  复选框   3  输入框  -->
+                     <el-select v-if="a.peopertyType==0" v-model="a.ckValues" placeholder="请选择">
+                        <el-option v-for="item in a.values" :key="item.id"  :label="a.ckValues" :value="item.nameCh"></el-option>
+                    </el-select>
 
-    <el-form-item v-model="peoper" v-if="notSkuData.length>0" label="商品属性" prop="peopertyId">
+              <el-radio-group  v-if="a.peopertyType==1" v-model="a.ckValues">
+                  <el-radio v-for="item in a.values" :key="item.id" :label="item.nameCh"></el-radio>
+              </el-radio-group>
 
-      <el-form-item v-for="a in  notSkuData" :key="a.id" :label="a.peopertyName">
-        <template slot-scope="scope">
-          <!--  0 下拉框     1 单选框      2  复选框   3  输入框  -->
-          <el-select v-if="a.peopertyType==0" v-model="a.ckValues" placeholder="请选择">
-            <el-option v-for="item in a.values" :key="item.id"  :label="a.ckValues" :value="item.nameCh"></el-option>
-          </el-select>
-
-          <el-radio-group  v-if="a.peopertyType==1" v-model="a.ckValues">
-            <el-radio v-for="item in a.values" :key="item.id" :label="item.nameCh"></el-radio>
-          </el-radio-group>
-
-          <el-checkbox-group  v-if="a.peopertyType==2"  v-model="a.ckValues" >
-            <el-checkbox v-for="item in a.values" :key="item.id" :label="item.nameCh" name="type"></el-checkbox>
-          </el-checkbox-group>
-          <!--  @change="notSkuChange"-->
-          <el-input v-if="a.peopertyType==3" v-model="a.ckValues"></el-input>
-        </template>
-      </el-form-item>
-    </el-form-item>
-    <!--<el-button type="primary" @click="addProduct">添加</el-button>-->
+              <el-checkbox-group  v-if="a.peopertyType==2"  v-model="a.ckValues" >
+                  <el-checkbox v-for="item in a.values" :key="item.id" :label="item.nameCh" name="type"></el-checkbox>
+              </el-checkbox-group>
+              <el-input v-if="a.peopertyType==3" ></el-input>
+                 </template>
+          </el-form-item>
+          </el-form-item>
+                <el-button type="primary" @click="update">确定修改</el-button>
   </el-form>
 
       </el-dialog>
 
-      <el-dialog
-        title="修改商品信息" :model="updateShopForm"
-        :visible.sync="updateFormFlag" width="40%">
+      <el-dialog title="修改商品信息" :model="updateShopForm" :visible.sync="updateFormFlag" width="40%">
         <el-form :model="updateShopForm" ref="addCarForm"   label-width="80px">
 
           <el-form-item label="商品名称" prop="name">
             <el-input v-model="updateShopForm.name" autocomplete="off" ></el-input>
           </el-form-item>
+
           <el-form-item label="商品标题" prop="title">
             <el-input v-model="updateShopForm.title" autocomplete="off" ></el-input>
           </el-form-item>
+
           <el-form-item label="品牌" prop="brandId">
             <el-select v-model="updateShopForm.brandId" placeholder="请选择分类" @change="selectChange">
               <el-option label="请选择" :value="-1"></el-option>
@@ -172,6 +168,7 @@
               </el-option>
             </el-select>
           </el-form-item>
+
           <el-form-item label="排序字段" prop="sortNum">
             <el-input-number v-model="updateShopForm.sortNum"  ></el-input-number>
           </el-form-item>
@@ -186,14 +183,9 @@
 
           <el-form-item label="图片" prop="imgpath">
             <img  :src="updateShopForm.imgpath" class="avatar" width="50px">
-            <el-upload
-              class="upload-demo"
-              action="http://localhost:8080/api/brand/load"
-              :on-success="imgCallBack"
-              name="img"
-              list-type="picture">
+            <el-upload class="upload-demo" name="img" list-type="picture" :on-success="imgCallBack"
+              action="http://localhost:8080/api/brand/load">
               <el-button plain type="primary">点击上传</el-button>
-
               <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
             </el-upload>
           </el-form-item>
@@ -242,16 +234,12 @@
             peoper:{},     //商品属性
             tableSkuData:[],//动态表头对应的表格数据
             cols:[],//动态表头
-            sk:{},//非sku 选中的值
             kuCun:"",
             jiaGe:"",
-            xia:"",
-            dan:""
           }
         },methods: {
         imgCallBack: function (response, file, fileList) { //图片上传的回调函数
-          // 赋值
-          this.updateShopForm.imgpath = response.data;
+          this.updateShopForm.imgpath = response.data;// 赋值
         },
         handleCurrentChange(page) {
           this.queryData(page);
@@ -262,11 +250,9 @@
         },
         toUpdate(id) {
           this.brandData = [];
-          /* this.TypeData=[];*/
           this.updateFormFlag = true;
           this.$axios.get("http://localhost:8080/api/shop/quertyShopById?id=" + id).then(rs => {
             this.updateShopForm = rs.data;
-
             this.getBrandData();
           }).catch(err => console.log("修改异常"))
         },
@@ -282,6 +268,7 @@
         handleDelete(id) {
           this.$axios.delete("http://localhost:8080/api/shop/deleteShop?id=" + id).then(rs => {
             this.queryData(1);
+            this.$message.success("删除成功");
           }).catch(err => {
             console.log("删除失败")
           })
@@ -292,7 +279,8 @@
           }).catch(err => {
             console.log("查询品牌信息失败")
           });
-        },//查询品牌的下拉框
+        },
+        //查询品牌的下拉框
         getTypeData() {
           this.$axios.get("http://localhost:8080/api/type/getData").then(rs => {
             //定义的数据     TypeDatas 等于查询出来的所有数据
@@ -304,7 +292,6 @@
               this.diGui(this.TypeData[i]);
               //给name重新赋值
               this.TypeData[i].name = this.typeName.split("/").reverse().join("/").substr(0, this.typeName.length - 1);
-
             }
           }).catch(err => {
             console.log("查询类型失败")
@@ -320,16 +307,15 @@
                 break;
               }
             }
-
           } else {
             this.typeName += "/" + node.name;
           }
-        },//查询类型的下拉框
+        },
+        //查询类型的下拉框
         getChildrenType: function () {
           //遍历所有的节点数据
           for (let i = 0; i < this.TypeDatas.length; i++) {
-            //节点中所有数据的一条
-            let node = this.TypeDatas[i];
+            let node = this.TypeDatas[i]; //节点中所有数据的一条
             //判断有没有子节点
             this.isChildrenNode(node);
           }
@@ -344,8 +330,7 @@
             }
           }
           if (rs == true) {
-            //将数据放到表中需要的字段中
-            this.TypeData.push(node);
+            this.TypeData.push(node); //将数据放到表中需要的字段中
           }
         },
         queryData(page) {
@@ -357,23 +342,21 @@
         handleEdit(peopertyId, pid) {
           /*console.log(peopertyId, pid);*/
           this.updatePeopertyFormFlag = true;
-          this.getTypeData();
+          this.getTypeData(); //显示分类内容
           this.peopertyAdd.typeId = peopertyId;//回显分类的下拉框
           this.selectChange(peopertyId, pid);//回显属性数据  peopertyId 类型的id      id就是属性值表的proId
           //回显table
           this.skuChange();
+          this.$forceUpdate();
         },
         skuChange() {
-
-          //笛卡尔积的参数
-          let kdej = [];
-          //清空表格数据
-          this.tableSkuData = [];
-          //清空动态表头数据
-          this.cols = [];
-          //判断是否要生成笛卡尔积
-          let flag = true;
+          //强制刷新组件
+          this.$forceUpdate();
+          let kdej = []; //笛卡尔积的参数
+          this.tableSkuData = [];//清空表格数据
+          this.cols = [];//清空动态表头数据
           //遍历sku所有数据
+          let flag = true;//判断是否要生成笛卡尔积
           for (let i = 0; i < this.skuData.length; i++) {
             //将sku属性 放入动态表头中
             this.cols.push({
@@ -401,7 +384,6 @@
                 //获取数据的key
                 let key = this.cols[j].name;
                 jsonData[key] = datas[i][j]
-
               }
               this.tableSkuData.push(jsonData);
             }
@@ -424,83 +406,10 @@
             return res;
           });
         },//笛卡尔积
-        selectChange(peopertyId, pid) {
-          //先查找到类型所对应的数据
-          this.$axios.get("http://localhost:8080/api/shopProduct/queryShopProductByProId?proId=" + pid).then(rs => {
-            let peopertyData = rs.data;
-            /* console.log(rs.data);*/
-            this.notSkuData = [];
-            this.skuData = [];
-            this.$axios.get("http://localhost:8080/api/peoperty/queryPeopertyByTypeId?typeId=" + peopertyId).then(rs => {
-              let attrDatas = rs.data;
-              /* console.log(attrDatas);*/
 
-              if (attrDatas.length > 0) {
-                for (let i = 0; i < attrDatas.length; i++) {
-                  if (attrDatas[i].isSku == 0) {
-                    if (attrDatas[i].peopertyType != 3) {
-                       /* 0 下拉框     1 单选框      2  复选框   3  输入框  */
-                      debugger;
-                      if (attrDatas[i].peopertyType == 2) {
-                        if (this.getValeu(attrDatas[i].peopertyId, peopertyData) == "") {
-                          attrDatas[i].ckValues=[];
-                        }else{
-                          attrDatas[i].ckValues=this.getValeu(attrDatas[i].peopertyId,peopertyData);
-                        }
-                      }else{
-                        attrDatas[i].ckValues=this.getValeu(attrDatas[i].peopertyId,peopertyData);
-                      }
-                      //发送请求，查询此属性所对应的属性值
-                      this.$axios.get("http://localhost:8080/api/peopertyValue/queryByPeoId?peoId="+attrDatas[i].id).then(rs=>{
-                        attrDatas[i].values=rs.data;
-                            /*console.log(rs.data.data);*/
-                        this.skuData.push(attrDatas[i]);//skuData
-                      })
-
-
-                    }else{
-                      attrDatas[i].ckValues=this.getValeu(attrDatas[i].peopertyId,peopertyData);
-                      this.skuData.push(attrDatas[i]);//skuData
-                    }
-                  }else{
-                    if(attrDatas[i].peopertyType!=3){
-                      //回显
-                      if(attrDatas[i].peopertyType==2){
-                        if(this.getValeu(attrDatas[i].peopertyId,peopertyData)==""){
-                          attrDatas[i].ckValues=[];
-                        }else{
-                          attrDatas[i].ckValues=this.getValeu(attrDatas[i].peopertyId,peopertyData);
-                        }
-                      }else{
-                        attrDatas[i].ckValues=this.getValeu(attrDatas[i].peopertyId,peopertyData);
-                      }
-                      //发起请求 查询此属性对应的选项值
-                      this.$axios.get("http://localhost:8080/api/peopertyValue/queryByPeoId?peoId="+attrDatas[i].id).then(rs=>{
-                        attrDatas[i].values=rs.data;
-                        // debugger;
-                        attrDatas[i].ckValues=this.getValeu(attrDatas[i].peopertyId,peopertyData);
-                        this.notSkuData.push(attrDatas[i]);//notSkuData
-                      })
-                    }else{
-                      attrDatas[i].ckValues=[];
-                      this.notSkuData.push(attrDatas[i]);//notSkuData
-                    }
-                  }
-                }
-              }
-              else{
-                this.skuData=[];
-                this.notSkuData=[];
-              }
-            });
-           /* console.log(this.notSkuData);
-            console.log(this.skuData);*/
-
-          })
-        },
         getValeu: function (key, data) {
+          console.log(data);
           let arrValue = [];
-          debugger;
           for (let i = 0; i < data.length; i++) {
             let objData = JSON.parse(data[i].attrData);
             if (objData[key] != null) {
@@ -509,13 +418,15 @@
                   arrValue.push(objData[key]);
                   console.log(arrValue);
                 }
-
+             /*   0 下拉框     1 单选框      2  复选框   3  输入框*/
               }else{
                 return objData[key];
               }
             }
           }
           return arrValue;
+        },update(){
+          this.$axios.post(""+proId).then(rs=>{})
         }
       },
       created(){
